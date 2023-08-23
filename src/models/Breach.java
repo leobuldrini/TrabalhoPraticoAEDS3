@@ -27,7 +27,9 @@ public class Breach {
         this.detailedStory = detailedStory;
         this.sectorAndMethod = sectorAndMethod;
     };
-    public Breach(){};
+    public Breach(){
+        this.id = -1;
+    };
 
     public String toString(){
         DecimalFormat df= new DecimalFormat("#,##0.00");//formata o valor dos pontos
