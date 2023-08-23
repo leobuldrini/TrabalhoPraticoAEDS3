@@ -1,3 +1,6 @@
 out/
 .idea/
 TrabalhoPraticoAEDS3.iml
+.DS_Store
+src/.DS_Store
+src/dataset/.DS_Store
