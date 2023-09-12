@@ -1,10 +1,8 @@
 package main;
 
-import models.Breach;
-import models.Registros;
+import models.*;
 
 import java.io.*;
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -19,6 +17,13 @@ public class Main {
         System.out.println("Working Directory = " + System.getProperty("user.dir"));
 
         Registros r = new Registros("src/dataset/breaches.db");
+        BTree bTree = new BTree("src/dataset/index.btree", 3);
+        try{
+            System.out.println(bTree.search(5));
+            bTree.saveIndex("src/dataset/index2.btree");
+        } catch (Exception e){
+            System.out.println(e.getMessage());
+        }
         try{
             r.limparRegistros();
         }catch (IOException e){
