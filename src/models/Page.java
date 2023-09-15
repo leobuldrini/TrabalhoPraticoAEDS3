@@ -8,8 +8,8 @@ import java.io.RandomAccessFile;
 public class Page {
 
     final private int n;
-    private int occuppied;
-    private KeyAddressPair[] elements;
+    public int occuppied;
+    public KeyAddressPair[] elements;
     public long[] pointers;
     public boolean isLeaf;
 
@@ -23,20 +23,26 @@ public class Page {
             pointers[i] = raf.readLong();
             if (pointers[i] > 0) {
                 leaf = false;
+            }else{
+                pointers[i] = -1;
             }
             if (i < n - 1) {
-                elements[i] = new KeyAddressPair(raf.readInt(), raf.readLong());
+                int key = raf.readInt();
+                long add = raf.readLong();
+                if(key >= 0 && add > 0){
+                    elements[i] = new KeyAddressPair(key, add);
+                }
             }
         }
         this.isLeaf = leaf;
     }
 
-    public Page(int n) {
+    public Page(int n, boolean leaf) {
         this.n = n;
         occuppied = 0;
         this.elements = new KeyAddressPair[n - 1];
         this.pointers = new long[n];
-        this.isLeaf = true;
+        this.isLeaf = leaf;
     }
 
     public long search(RandomAccessFile raf, int id, long address) throws IOException {
@@ -59,58 +65,46 @@ public class Page {
         return search(raf, id, page.pointers[i]);
     }
 
-    public void add(RandomAccessFile raf, KeyAddressPair kPair, long address, long dadAddress) throws Exception {
-        raf.seek(address);
-        Page page = new Page(raf, n);
-        int i;
-        for (i = 0; i < n - 1; i++) {
-            if (i < page.occuppied) {
-                if (kPair.key == page.elements[i].key) {
-                    throw new Exception("azedo");
-                } else if (kPair.key < page.elements[i].key) {
-                    if (page.isLeaf) break;
-                    add(raf, kPair, page.pointers[i], address);
-                }
-                i++;
-            } else {
-                if (page.isLeaf) break;
-                add(raf, kPair, page.pointers[i], address);
-            }
-        }
-        if (page.occuppied == n - 1) {
-            Page newPage = split(page);
-            int k;
-            for (k = n / 2; k < n - 1; k++) {
-                page.elements[k] = null;
-                page.pointers[k] = 0;
-            }
-            page.pointers[k] = 0;
-            page.occuppied -= newPage.occuppied;
-
-        } else {
-            if (i == page.occuppied) {
-                page.elements[i] = kPair;
-            } else {
-                for (int k = n - 1; k >= i; k--) {
-                    page.elements[k] = page.elements[k - 1];
-                }
-                page.elements[i] = kPair;
-                page.occuppied++;
-            }
-        }
-    }
-
-    private Page split(Page dad) {
-        Page page = new Page(n);
-        page.occuppied = dad.occuppied / 2;
-        int i;
-        for (i = n / 2; i < n - 1; i++) {
-            page.elements[i] = dad.elements[i];
-            page.pointers[i] = dad.pointers[i];
-        }
-        page.pointers[i] = dad.pointers[i];
-        return page;
-    }
+//    public void add(RandomAccessFile raf, KeyAddressPair kPair, long address, long dadAddress) throws Exception {
+//        raf.seek(address);
+//        Page page = new Page(raf, n);
+//        int i;
+//        for (i = 0; i < n - 1; i++) {
+//            if (i < page.occuppied) {
+//                if (kPair.key == page.elements[i].key) {
+//                    throw new Exception("azedo");
+//                } else if (kPair.key < page.elements[i].key) {
+//                    if (page.isLeaf) break;
+//                    add(raf, kPair, page.pointers[i], address);
+//                }
+//                i++;
+//            } else {
+//                if (page.isLeaf) break;
+//                add(raf, kPair, page.pointers[i], address);
+//            }
+//        }
+//        if (page.occuppied == n - 1) {
+//            Page newPage = split(page);
+//            int k;
+//            for (k = n / 2; k < n - 1; k++) {
+//                page.elements[k] = null;
+//                page.pointers[k] = 0;
+//            }
+//            page.pointers[k] = 0;
+//            page.occuppied -= newPage.occuppied;
+//
+//        } else {
+//            if (i == page.occuppied) {
+//                page.elements[i] = kPair;
+//            } else {
+//                for (int k = n - 1; k >= i; k--) {
+//                    page.elements[k] = page.elements[k - 1];
+//                }
+//                page.elements[i] = kPair;
+//                page.occuppied++;
+//            }
+//        }
+//    }
 
     public byte[] toByteArray() throws IOException {
 
@@ -121,8 +115,13 @@ public class Page {
         int i;
         for (i = 0; i < n - 1; i++) {
             dos.writeLong(pointers[i]);
-            dos.writeInt(elements[i].key);
-            dos.writeLong(elements[i].address);
+            if(elements[i] != null){
+                dos.writeInt(elements[i].key);
+                dos.writeLong(elements[i].address);
+            }else{
+                dos.writeInt(-1);
+                dos.writeLong(-1);
+            }
         }
         dos.writeLong(pointers[i]);
         return baos.toByteArray();

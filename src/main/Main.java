@@ -20,24 +20,30 @@ public class Main {
         BTree bTree = new BTree("src/dataset/index.btree", 3);
         try{
             System.out.println(bTree.search(5));
+            bTree.addIndex(new KeyAddressPair(18, 0x7FF));
+            System.out.println(bTree.search(18));
+            bTree.addIndex(new KeyAddressPair(15, 0x7FE));
+            System.out.println(bTree.search(15));
+            bTree.addIndex(new KeyAddressPair(13, 0x7FE));
+            System.out.println(bTree.search(13));
             bTree.saveIndex("src/dataset/index2.btree");
         } catch (Exception e){
             System.out.println(e.getMessage());
         }
-        try{
-            r.limparRegistros();
-        }catch (IOException e){
-            System.out.println(e.getMessage());
-        }
-
-        r.inserirRegistro(b1);
-        r.inserirRegistro(b2);
-        r.inserirRegistro(b3);
-        r.readAllBreaches();
-        Breach removed = r.deletarRegistro(1);
-        System.out.println("REMOVI AQUI Ó " + removed.id);
-        r.readAllBreaches();
-        r.inserirRegistro(b6);
-        r.readAllBreaches();
+//        try{
+//            r.limparRegistros();
+//        }catch (IOException e){
+//            System.out.println(e.getMessage());
+//        }
+//
+//        r.inserirRegistro(b1);
+//        r.inserirRegistro(b2);
+//        r.inserirRegistro(b3);
+//        r.readAllBreaches();
+//        Breach removed = r.deletarRegistro(1);
+//        System.out.println("REMOVI AQUI Ó " + removed.id);
+//        r.readAllBreaches();
+//        r.inserirRegistro(b6);
+//        r.readAllBreaches();
     }
 }
