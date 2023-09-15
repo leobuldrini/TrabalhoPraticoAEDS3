@@ -31,13 +31,15 @@ public class BTree {
         Page rootPage = new Page(raf, T);
 
         if(rootPage.occuppied == T-1){
-            raf.seek(raf.length() - 1);
+            raf.seek(raf.length());
             Page newPage = new Page(T, false);
             newPage.pointers[0] = this.root;
             this.root = raf.getFilePointer();
             raf.write(newPage.toByteArray());
             this.split_child(raf, this.root, 0);
             this.addNonFullIndex(raf, this.root, keyAddressPair);
+            raf.seek(0);
+            raf.writeLong(this.root);
         }else{
             this.addNonFullIndex(raf, this.root, keyAddressPair);
         }
@@ -67,10 +69,14 @@ public class BTree {
             Page tempPage = new Page(raf, this.T);
             if(tempPage.occuppied == T-1){
                 split_child(raf, pageAdd, i);
+                raf.seek(pageAdd);
+                page = new Page(raf, T);
                 if(keyAddressPair.key > page.elements[i].key){
                     i+=1;
                 }
             }
+            raf.seek(pageAdd);
+            page = new Page(raf, T);
             addNonFullIndex(raf, page.pointers[i], keyAddressPair);
         }
     }
@@ -78,10 +84,12 @@ public class BTree {
     public void split_child(RandomAccessFile raf, long dadAddress, int fullChildIndex) throws IOException{
         raf.seek(dadAddress);
         Page dad = new Page(raf, T);
-        raf.seek(dad.pointers[fullChildIndex]);
+        long fullChildAddress = dad.pointers[fullChildIndex];
+        raf.seek(fullChildAddress);
         Page fullChild = new Page(raf, this.T);
         Page newPage = new Page(this.T, fullChild.isLeaf);
-        raf.seek(raf.length() - 1);
+        long newPageAddress = raf.length();
+        raf.seek(newPageAddress);
         for(int i = T-1; i > fullChildIndex + 1; i--){
             dad.pointers[i] = dad.pointers[i-1];
         }
@@ -91,9 +99,9 @@ public class BTree {
         }
         dad.elements[fullChildIndex] = fullChild.elements[(T/2) - 1];
         dad.occuppied++;
-        System.arraycopy(fullChild.elements, (T/2) - 1, newPage.elements, 0, T-1);
+        System.arraycopy(fullChild.elements, (T/2), newPage.elements, 0, T/2 - 1);
         newPage.occuppied = fullChild.occuppied/2;
-        for(int i = T/2-2; i < T; i++){
+        for(int i = T/2-1; i < T-1; i++){
             fullChild.elements[i] = null;
         }
         fullChild.occuppied /= 2;
@@ -103,7 +111,12 @@ public class BTree {
                 fullChild.pointers[i] = -1;
             }
         }
+        System.out.println(raf.getFilePointer());
         raf.write(newPage.toByteArray());
+        raf.seek(fullChildAddress);
+        raf.write(fullChild.toByteArray());
+        raf.seek(dadAddress);
+        raf.write(dad.toByteArray());
     }
 
     private void setRoot(){

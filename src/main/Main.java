@@ -17,15 +17,20 @@ public class Main {
         System.out.println("Working Directory = " + System.getProperty("user.dir"));
 
         Registros r = new Registros("src/dataset/breaches.db");
-        BTree bTree = new BTree("src/dataset/index.btree", 3);
         try{
-            System.out.println(bTree.search(5));
+            new FileOutputStream("src/dataset/index.btree").close();
+            RandomAccessFile raf = new RandomAccessFile("src/dataset/index.btree", "rw");
+            raf.writeLong(0);
+            raf.close();
+        }catch (FileNotFoundException e){
+            System.out.println("Arquivo não encontrado");
+        }catch (IOException e){
+            System.out.println(e.getMessage());
+        }
+        BTree bTree = new BTree("src/dataset/index.btree", 8);
+        try{
             bTree.addIndex(new KeyAddressPair(18, 0x7FF));
-            System.out.println(bTree.search(18));
-            bTree.addIndex(new KeyAddressPair(15, 0x7FE));
-            System.out.println(bTree.search(15));
-            bTree.addIndex(new KeyAddressPair(13, 0x7FE));
-            System.out.println(bTree.search(13));
+            System.out.println(bTree.search(121));
             bTree.saveIndex("src/dataset/index2.btree");
         } catch (Exception e){
             System.out.println(e.getMessage());

@@ -42,6 +42,9 @@ public class Page {
         occuppied = 0;
         this.elements = new KeyAddressPair[n - 1];
         this.pointers = new long[n];
+        for(int i = 0; i < n; i++){
+            pointers[i] = -1;
+        }
         this.isLeaf = leaf;
     }
 
