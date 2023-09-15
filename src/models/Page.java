@@ -51,14 +51,13 @@ public class Page {
     public long search(RandomAccessFile raf, int id, long address) throws IOException {
         raf.seek(address);
         Page page = new Page(raf, n);
-        System.out.println(raf.getFilePointer() + " " + String.format("%x", raf.getFilePointer()));
         int i = 0;
         while (i < n - 1) {
             if (i >= page.occuppied || id < page.elements[i].key) {
                 if (isLeaf) return -1;
                 return search(raf, id, page.pointers[i]);
             } else if (page.elements[i].key == id) {
-                return address;
+                return page.elements[i].address;
             }
             i++;
         }

@@ -4,6 +4,4 @@ TrabalhoPraticoAEDS3.iml
 .DS_Store
 src/.DS_Store
 src/dataset/.DS_Store
-.class
-src/models/.class
-src/main/.class
+*.class

@@ -7,12 +7,14 @@ import java.io.RandomAccessFile;
 
 public class Registros {
     final private String filePath;
+    final private BTree index;
 
-    public Registros(String filepath){
+    public Registros(String filepath, BTree index){
         this.filePath = filepath;
+        this.index = index;
     };
 
-    public void readAllBreaches() {
+    public void readAllBreaches() throws Exception{
         try{
             RandomAccessFile raf = new RandomAccessFile(filePath, "r");
             Breach breach = new Breach();
@@ -20,6 +22,7 @@ public class Registros {
             int lastId = raf.readInt();
             System.out.println("\n\n> Último id: " + lastId + "\n---------------------");
             while(raf.getFilePointer() < raf.length()){
+                long lapideAdd = raf.getFilePointer();
                 byte lapide = raf.readByte();
                 int tamanhoRegistro = raf.readInt();
                 if(lapide == 0x01){
@@ -40,7 +43,7 @@ public class Registros {
         }
     }
 
-    public void inserirRegistro(Breach breach){
+    public void inserirRegistro(Breach breach) throws Exception{
         try{
             RandomAccessFile raf = new RandomAccessFile(filePath, "rw");
             int lastId = raf.readInt();
@@ -63,6 +66,7 @@ public class Registros {
             if(espacoVago){
                 raf.seek(raf.getFilePointer() - 5);
             }
+            index.addIndex(new KeyAddressPair(breach.id, raf.getFilePointer()));
             raf.write((byte)0x00);
             raf.writeInt(Math.max(regLength, breachBytes.length));
             raf.write(breachBytes);
@@ -120,5 +124,24 @@ public class Registros {
             System.out.println(e.getMessage());
         }
         return removed;
+    }
+
+    public Breach retrieveBreach(int id) throws IOException{
+        long address = index.retrieveBreachAddress(id);
+        if(address < 0) return null;
+        RandomAccessFile raf = new RandomAccessFile(filePath, "r");
+        raf.seek(address);
+        Breach breach = new Breach();
+        byte lapide = raf.readByte();
+        int tamanhoRegistro = raf.readInt();
+        if(lapide == 0x01){
+            raf.seek(raf.getFilePointer() + tamanhoRegistro);
+            return null;
+        }
+        byte[] registro = new byte[tamanhoRegistro];
+        raf.read(registro);
+        breach.fromByteArray(registro);
+        raf.close();
+        return breach;
     }
 }

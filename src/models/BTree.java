@@ -25,6 +25,15 @@ public class BTree {
         return found != -1;
     }
 
+    public long retrieveBreachAddress(int id) throws IOException{
+        RandomAccessFile raf = new RandomAccessFile(this.path, "r");
+        raf.seek(root);
+        Page rootPage = new Page(raf, T);
+        long found = rootPage.search(raf, id, root);
+        raf.close();
+        return found;
+    }
+
     public void addIndex(KeyAddressPair keyAddressPair) throws Exception{
         RandomAccessFile raf = new RandomAccessFile(this.path, "rw");
         raf.seek(root);
@@ -111,7 +120,6 @@ public class BTree {
                 fullChild.pointers[i] = -1;
             }
         }
-        System.out.println(raf.getFilePointer());
         raf.write(newPage.toByteArray());
         raf.seek(fullChildAddress);
         raf.write(fullChild.toByteArray());
@@ -129,6 +137,8 @@ public class BTree {
                 root = raf.getFilePointer();
                 raf.write(newRoot.toByteArray());
             }
+            raf.seek(0);
+            raf.writeLong(root);
             raf.close();
         } catch (IOException e){
             System.out.println(e.getMessage());
