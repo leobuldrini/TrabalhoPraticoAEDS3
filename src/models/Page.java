@@ -66,47 +66,31 @@ public class Page {
         }
         return search(raf, id, page.pointers[i]);
     }
+    public boolean update(RandomAccessFile raf, long address, int id, long newAddress) throws IOException {
+        raf.seek(address);
+        Page page = new Page(raf, n);
+        int i = 0;
+        while (i < n - 1) {
+            if (i >= page.occuppied || id < page.elements[i].key) {
+                if (isLeaf) return false;
+                return update(raf, page.pointers[i], id, newAddress);
+            } else if (page.elements[i].key == id) {
+                page.elements[i].address = newAddress;
+                page.writeNode(raf, address);
+                return true;
+            }
+            i++;
+        }
+        if (isLeaf) {
+            return false;
+        }
+        return update(raf, page.pointers[i], id, newAddress);
+    }
 
-//    public void add(RandomAccessFile raf, KeyAddressPair kPair, long address, long dadAddress) throws Exception {
-//        raf.seek(address);
-//        Page page = new Page(raf, n);
-//        int i;
-//        for (i = 0; i < n - 1; i++) {
-//            if (i < page.occuppied) {
-//                if (kPair.key == page.elements[i].key) {
-//                    throw new Exception("azedo");
-//                } else if (kPair.key < page.elements[i].key) {
-//                    if (page.isLeaf) break;
-//                    add(raf, kPair, page.pointers[i], address);
-//                }
-//                i++;
-//            } else {
-//                if (page.isLeaf) break;
-//                add(raf, kPair, page.pointers[i], address);
-//            }
-//        }
-//        if (page.occuppied == n - 1) {
-//            Page newPage = split(page);
-//            int k;
-//            for (k = n / 2; k < n - 1; k++) {
-//                page.elements[k] = null;
-//                page.pointers[k] = 0;
-//            }
-//            page.pointers[k] = 0;
-//            page.occuppied -= newPage.occuppied;
-//
-//        } else {
-//            if (i == page.occuppied) {
-//                page.elements[i] = kPair;
-//            } else {
-//                for (int k = n - 1; k >= i; k--) {
-//                    page.elements[k] = page.elements[k - 1];
-//                }
-//                page.elements[i] = kPair;
-//                page.occuppied++;
-//            }
-//        }
-//    }
+    private void writeNode(RandomAccessFile raf, long address) throws IOException{
+        raf.seek(address);
+        raf.write(this.toByteArray());
+    }
 
     public byte[] toByteArray() throws IOException {
 

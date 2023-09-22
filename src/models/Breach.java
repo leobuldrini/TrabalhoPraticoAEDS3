@@ -29,7 +29,26 @@ public class Breach {
     };
     public Breach(){
         this.id = -1;
+        this.recordsLost = -1;
     };
+
+    public void update(Breach breach) {
+        if (breach.company != null && !breach.company.isEmpty()) {
+            this.company = breach.company;
+        }
+        if(breach.date != null && breach.date.isAfter(LocalDate.ofYearDay(1800, 1))){
+            this.date = breach.date;
+        }
+        if(breach.detailedStory != null && !breach.detailedStory.isEmpty()){
+            this.detailedStory = breach.detailedStory;
+        }
+        if(breach.recordsLost >= 0){
+            this.recordsLost = breach.recordsLost;
+        }
+        if(breach.sectorAndMethod != null && breach.sectorAndMethod.length > 0){
+            this.sectorAndMethod = breach.sectorAndMethod;
+        }
+    }
 
     public String toString(){
         DecimalFormat df= new DecimalFormat("#,##0.00");//formata o valor dos pontos

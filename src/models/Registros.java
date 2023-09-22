@@ -7,14 +7,14 @@ import java.io.RandomAccessFile;
 
 public class Registros {
     final private String filePath;
-    final private BTree index;
+    final private BTree bTreeIndex;
 
-    public Registros(String filepath, BTree index){
+    public Registros(String filepath, BTree bTreeIndex){
         this.filePath = filepath;
-        this.index = index;
+        this.bTreeIndex = bTreeIndex;
     };
 
-    public void readAllBreaches() throws Exception{
+    public void readAllBreaches(){
         try{
             RandomAccessFile raf = new RandomAccessFile(filePath, "r");
             Breach breach = new Breach();
@@ -66,7 +66,7 @@ public class Registros {
             if(espacoVago){
                 raf.seek(raf.getFilePointer() - 5);
             }
-            index.addIndex(new KeyAddressPair(breach.id, raf.getFilePointer()));
+            bTreeIndex.addIndex(new KeyAddressPair(breach.id, raf.getFilePointer()));
             raf.write((byte)0x00);
             raf.writeInt(Math.max(regLength, breachBytes.length));
             raf.write(breachBytes);
@@ -127,7 +127,7 @@ public class Registros {
     }
 
     public Breach retrieveBreach(int id) throws IOException{
-        long address = index.retrieveBreachAddress(id);
+        long address = bTreeIndex.retrieveBreachAddress(id);
         if(address < 0) return null;
         RandomAccessFile raf = new RandomAccessFile(filePath, "r");
         raf.seek(address);
@@ -143,5 +143,45 @@ public class Registros {
         breach.fromByteArray(registro);
         raf.close();
         return breach;
+    }
+
+    public boolean updateBreach(Breach breach) {
+        try{
+            long address = bTreeIndex.retrieveBreachAddress(breach.id);
+            if(address < 0) return false;
+            RandomAccessFile raf = new RandomAccessFile(filePath, "rw");
+            raf.seek(address);
+            byte lapide = raf.readByte();
+            int tamanhoRegistro = raf.readInt();
+            if(lapide == 0x01){
+                return false;
+            }
+            long add = raf.getFilePointer();
+            byte[] registro = new byte[tamanhoRegistro];
+            raf.read(registro);
+            Breach oldBreach = new Breach();
+            oldBreach.fromByteArray(registro);
+            oldBreach.update(breach);
+            byte[] updatedBreach = oldBreach.toByteArray();
+            boolean canFit = updatedBreach.length <= tamanhoRegistro;
+            if(canFit){
+                raf.seek(add);
+                raf.write(updatedBreach);
+            } else {
+                raf.seek(add - 5);
+                raf.write((byte) 0x01);
+                raf.seek(raf.length());
+                long newAddress = raf.getFilePointer();
+                raf.write((byte) 0x00);
+                raf.writeInt(updatedBreach.length);
+                bTreeIndex.updateKeyAddress(breach.id, newAddress);
+                raf.write(updatedBreach);
+            }
+            raf.close();
+            return true;
+        } catch (IOException err) {
+            System.out.println("Erro no I/O do arquivo: " + err.getMessage());
+        }
+        return false;
     }
 }

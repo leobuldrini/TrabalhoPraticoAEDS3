@@ -34,6 +34,14 @@ public class BTree {
         return found;
     }
 
+    public void updateKeyAddress(int id, long newAddress) throws IOException{
+        RandomAccessFile raf = new RandomAccessFile(this.path, "rw");
+        raf.seek(root);
+        Page rootPage = new Page(raf, T);
+        boolean updated = rootPage.update(raf, root, id, newAddress);
+        raf.close();
+    }
+
     public void addIndex(KeyAddressPair keyAddressPair) throws Exception{
         RandomAccessFile raf = new RandomAccessFile(this.path, "rw");
         raf.seek(root);
@@ -90,7 +98,7 @@ public class BTree {
         }
     }
 
-    public void split_child(RandomAccessFile raf, long dadAddress, int fullChildIndex) throws IOException{
+    private void split_child(RandomAccessFile raf, long dadAddress, int fullChildIndex) throws IOException{
         raf.seek(dadAddress);
         Page dad = new Page(raf, T);
         long fullChildAddress = dad.pointers[fullChildIndex];
