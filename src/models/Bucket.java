@@ -4,14 +4,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.List;
 
-public class Bucket {
+public class Bucket implements HashInterface {
     int p;
-    int bucketLength;
+    final private int bucketLength;
     KeyAddressPair[] keyAddressPairs;
 
-    Bucket(int bucketLength){
-        this.p = 1;
+    Bucket(int bucketLength, int p) {
+        this.p = p;
         this.bucketLength = bucketLength;
         this.keyAddressPairs = new KeyAddressPair[bucketLength];
     }
@@ -20,48 +22,78 @@ public class Bucket {
         this.bucketLength = bucketLength;
         p = raf.readInt();
         this.keyAddressPairs = new KeyAddressPair[bucketLength];
-        for(int i = 0; i < bucketLength; i++){
+        for (int i = 0; i < bucketLength; i++) {
             int key = raf.readInt();
             long add = raf.readLong();
-            if(key >= 0 && add > 0){
+            if (key >= 0 && add > 0) {
                 keyAddressPairs[i] = new KeyAddressPair(key, add);
             }
         }
     }
 
-    long retrieveAddress(int id){
+    public int hash(int id) {
+        return (int) (id % (Math.pow(2, p)));
+    }
+
+    long retrieveAddress(int id) {
         boolean found = false;
         int i = 0;
-        while(!found && i < bucketLength){
-            if(keyAddressPairs[i] != null && keyAddressPairs[i].key == id) found = true;
+        while (!found && i < bucketLength) {
+            if (keyAddressPairs[i] != null && keyAddressPairs[i].key == id) found = true;
             i++;
         }
         i--;
-        if(found) return keyAddressPairs[i].address; else return -1;
+        if (found) return keyAddressPairs[i].address;
+        else return -1;
     }
 
-    public boolean insertFreeSpace(KeyAddressPair keyAddressPair){
+    public boolean insertFreeSpace(KeyAddressPair keyAddressPair) {
         int i = 0;
-        try{
-            while(keyAddressPairs[i] != null){
+        try {
+            while (keyAddressPairs[i] != null) {
                 i++;
             }
             keyAddressPairs[i] = keyAddressPair;
             return true;
-        }catch (IndexOutOfBoundsException err){
+        } catch (IndexOutOfBoundsException err) {
             return false;
         }
     }
 
-    public byte[] toByteArray() throws IOException{
+    public List<KeyAddressPair> recalculateNewP(int bucketNumber) {
+        this.p++;
+        List<KeyAddressPair> reallocated = new ArrayList<>();
+        if (hash(keyAddressPairs[bucketLength - 1].key) != bucketNumber) {
+            reallocated.add(keyAddressPairs[bucketLength - 1]);
+            keyAddressPairs[bucketLength - 1] = null;
+        }
+        for (int i = bucketLength - 2; i >= 0 && keyAddressPairs[i] != null; i--) {
+            int newHash = hash(keyAddressPairs[i].key);
+            if (newHash != bucketNumber) {
+                reallocated.add(keyAddressPairs[i]);
+                keyAddressPairs[i] = null;
+                for (int j = i; j < keyAddressPairs.length - 1; j++) {
+                    keyAddressPairs[j] = keyAddressPairs[j + 1];
+                }
+                keyAddressPairs[keyAddressPairs.length - 1] = null; // Define o último elemento como null
+                i--;
+            }
+        }
+        return reallocated;
+    }
+
+    public byte[] toByteArray() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
 
         dos.writeInt(p);
-        for(int i = 0; i < bucketLength; i++){
-            if(keyAddressPairs[i] != null){
+        for (int i = 0; i < bucketLength; i++) {
+            if (keyAddressPairs[i] != null) {
                 dos.writeInt(keyAddressPairs[i].key);
                 dos.writeLong(keyAddressPairs[i].address);
+            } else {
+                dos.writeInt(-1);
+                dos.writeLong(-1);
             }
         }
         return baos.toByteArray();
