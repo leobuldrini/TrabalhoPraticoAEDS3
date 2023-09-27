@@ -105,6 +105,24 @@ public class ExtendedHash implements HashInterface {
         }
     }
 
+    public boolean updateKeyAddress(int id, long newAddress) throws IOException{
+        RandomAccessFile raf = new RandomAccessFile(hashTablePath, "r");
+        int bucketNumber = hash(id);
+        raf.seek(4 + (bucketNumber * 8L));
+        long bucketAddress = raf.readLong();
+        RandomAccessFile rafBucket = new RandomAccessFile(bucketsTablePath, "rw");
+        rafBucket.seek(bucketAddress);
+        Bucket bucket = new Bucket(rafBucket, bucketLength);
+        boolean updated = bucket.update(id, newAddress);
+        if(updated){
+            rafBucket.seek(bucketAddress);
+            rafBucket.write(bucket.toByteArray());
+        }
+        raf.close();
+        rafBucket.close();
+        return updated;
+    }
+
     private void setParameters() {
         try {
             RandomAccessFile raf = new RandomAccessFile(hashTablePath, "rw");

@@ -47,6 +47,28 @@ public class Bucket implements HashInterface {
         else return -1;
     }
 
+    private int retrieveIndexInsideBucketIfExists(int id){
+        boolean found = false;
+        int i = 0;
+        while (!found && i < bucketLength) {
+            if (keyAddressPairs[i] != null && keyAddressPairs[i].key == id) found = true;
+            i++;
+        }
+        i--;
+        if (found) return i;
+        else return -1;
+    }
+
+    public boolean update(int id, long newAddress){
+        int index = retrieveIndexInsideBucketIfExists(id);
+        if(index >= 0){
+            keyAddressPairs[index].address = newAddress;
+            return true;
+        }else{
+            return false;
+        }
+    }
+
     public boolean insertFreeSpace(KeyAddressPair keyAddressPair) {
         int i = 0;
         try {

@@ -42,7 +42,7 @@ public class BTree {
         raf.close();
     }
 
-    public void addIndex(KeyAddressPair keyAddressPair) throws Exception{
+    public void addIndex(KeyAddressPair keyAddressPair) throws IOException{
         RandomAccessFile raf = new RandomAccessFile(this.path, "rw");
         raf.seek(root);
         Page rootPage = new Page(raf, T);
