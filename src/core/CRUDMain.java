@@ -1,5 +1,6 @@
 package core;
 
+import main.Main;
 import models.Breach;
 import models.Registros;
 
@@ -18,7 +19,7 @@ public class CRUDMain {
     final CRUDBTree crudBTree;
     final CRUDInvertedList crudInvertedList;
     static boolean loaded = false;
-    CRUDMain(Registros registros){
+    public CRUDMain(Registros registros){
         this.registros = registros;
         this.crudSequencial = new CRUDSequencial(registros);
         this.crudHash = new CRUDHash(registros);
@@ -60,6 +61,9 @@ public class CRUDMain {
                     if(opClear == 1){
                         registros.limparRegistros();
                     }
+                    break;
+                case 6:
+                    Main.loadTempBase();
                     break;
                 default:
                     break;

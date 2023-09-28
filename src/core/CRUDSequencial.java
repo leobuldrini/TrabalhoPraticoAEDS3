@@ -13,7 +13,6 @@ public class CRUDSequencial {
     final private Scanner sc = new Scanner(System.in);
     final Registros registros;
     final private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy").withLocale(Locale.US);
-    static boolean loaded = false;
 
     public CRUDSequencial(Registros registros){
         this.registros = registros;
@@ -102,18 +101,6 @@ public class CRUDSequencial {
                         System.out.println("Registro de id "+ deleted.id + " deletado!");
                     }
                     break;
-                case 6:
-                    System.out.println("Tem certeza que deseja deletar toda a base de registros?\n(0)Não\n(1)Sim");
-                    String opInputLimparRegistros = sc.nextLine();
-                    while (opInputLimparRegistros.length() > 1 || opInputLimparRegistros.charAt(0) < '0' || opInputLimparRegistros.charAt(0) > '1'){
-                        System.out.println("Tem certeza que deseja deletar toda a base de registros?\n(0)Não\n(1)Sim");
-                        opInputLimparRegistros = sc.nextLine();
-                    }
-                    int opClear = Integer.parseInt(opInputLimparRegistros);
-                    if(opClear == 1){
-                        registros.limparRegistros();
-                    }
-                    break;
                 default:
                     break;
             }
@@ -145,8 +132,6 @@ public class CRUDSequencial {
         System.out.println("(3) Adicionar um breach ao registro");
         System.out.println("(4) Atualizar algum dado do breach");
         System.out.println("(5) Remover um registro");
-        System.out.println("(6) Limpar todos os registros");
-        System.out.println(loaded ? "" : "(7) Carregar os registros da base");
         System.out.println("\n (0) Voltar");
     }
 

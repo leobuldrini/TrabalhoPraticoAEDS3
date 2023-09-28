@@ -150,7 +150,6 @@ public class Registros {
                 }
                 byte[] registroBytes = new byte[registroLength];
                 raf.read(registroBytes);
-                long prop4 = raf.getFilePointer();
                 removed.fromByteArray(registroBytes);
                 if (removed.id == id) {
                     found = true;
@@ -158,7 +157,6 @@ public class Registros {
             }
             if (found) {
                 raf.seek(prop1);
-                long prop2 = raf.getFilePointer();
                 raf.write((byte) 0x01);
             }
             raf.close();
@@ -177,6 +175,7 @@ public class Registros {
             boolean found = false;
             long removeAddress = extendedHashIndex.retrieveAddress(id);
             raf.seek(removeAddress);
+            long prop1 = raf.getFilePointer();
             boolean dead = raf.readByte() != 0;
             int registroLength = raf.readInt();
             if (dead) {
@@ -189,7 +188,7 @@ public class Registros {
                 found = true;
             }
             if (found) {
-                raf.seek(raf.getFilePointer() - registroLength - 5);
+                raf.seek(prop1);
                 raf.write((byte) 0x01);
                 extendedHashIndex.remove(id);
             }

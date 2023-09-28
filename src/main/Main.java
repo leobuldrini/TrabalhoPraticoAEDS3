@@ -1,10 +1,11 @@
 package main;
 
-import core.CRUDSequencial;
+import core.CRUDMain;
 import models.*;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -12,16 +13,16 @@ import java.util.Locale;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         BTree bTree = new BTree(System.getProperty("user.dir") + "/src/dataset/index.btree", 8);
         ExtendedHash exHash = new ExtendedHash(4, System.getProperty("user.dir") + "/src/dataset/buckets.hash", System.getProperty("user.dir") + "/src/dataset/index.hash");
         Registros r = new Registros(System.getProperty("user.dir") + "/src/dataset/breaches.db", bTree, exHash);
-        CRUDSequencial crudSequencial = new CRUDSequencial(r);
-        crudSequencial.menu();
+        CRUDMain crudMain = new CRUDMain(r);
+        crudMain.menu();
 //        teste();
     }
 
-    public static void teste() {
+    public static void loadTempBase() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy").withLocale(Locale.US);
         Breach b1 = new Breach(0, "Shanghai Police", 500000000, LocalDate.parse("01 Jul 2022", formatter), "A database containing records of over a billion Chinese civilians – allegedly stolen from the Shangh...", new String[]{"financial", "hacked"});
         Breach b2 = new Breach(1, "Twitter", 5400000, LocalDate.parse("01 Dec 2022", formatter), "Zero day vulnerability allowed a threat actor to create profiles of 5.4 million Twitter users inc. a...", new String[]{"web", "hacked"});
