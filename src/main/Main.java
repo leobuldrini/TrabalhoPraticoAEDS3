@@ -1,5 +1,6 @@
 package main;
 
+import core.CRUDSequencial;
 import models.*;
 
 import java.io.FileNotFoundException;
@@ -12,7 +13,12 @@ import java.util.Locale;
 public class Main {
 
     public static void main(String[] args) {
-
+        BTree bTree = new BTree(System.getProperty("user.dir") + "/src/dataset/index.btree", 8);
+        ExtendedHash exHash = new ExtendedHash(4, System.getProperty("user.dir") + "/src/dataset/buckets.hash", System.getProperty("user.dir") + "/src/dataset/index.hash");
+        Registros r = new Registros(System.getProperty("user.dir") + "/src/dataset/breaches.db", bTree, exHash);
+        CRUDSequencial crudSequencial = new CRUDSequencial(r);
+        crudSequencial.menu();
+//        teste();
     }
 
     public static void teste() {
@@ -53,9 +59,7 @@ public class Main {
             Breach fakeBreach = new Breach();
             fakeBreach.id = 2;
             fakeBreach.company = "The Walt Disney Company and The official disney channel";
-            System.out.println(r.retrieveBreachByBTree(2));
-            System.out.println(r.retrieveBreachByExtendedHash(2));
-            r.updateBreach(fakeBreach);
+            r.readAllBreaches();
             System.out.println(r.retrieveBreachByBTree(2));
             System.out.println(r.retrieveBreachByExtendedHash(2));
         } catch (Exception e) {

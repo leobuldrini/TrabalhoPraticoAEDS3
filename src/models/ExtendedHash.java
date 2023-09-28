@@ -24,6 +24,10 @@ public class ExtendedHash implements HashInterface {
         return (int) (id % (Math.pow(2, p)));
     }
 
+    public int hash(int id, int p) {
+        return (int) (id % (Math.pow(2, p)));
+    }
+
     public long retrieveAddress(int id) {
         long addressFound = -1;
         int bucketNumber = hash(id);
@@ -94,7 +98,7 @@ public class ExtendedHash implements HashInterface {
             newBucketNumber = hash(keyAddressPair.key);
         }
         raf.seek(4 + (newBucketNumber * 8L));
-        rafBucket.seek(rafBucket.length());
+        rafBucket.seek(findEmptySpace(rafBucket));
         Bucket newBucket = new Bucket(bucketLength, p);
         raf.writeLong(rafBucket.getFilePointer());
         rafBucket.write(newBucket.toByteArray());
@@ -102,6 +106,25 @@ public class ExtendedHash implements HashInterface {
         raf.close();
         for (int i = 0; i < reallocated.size(); i++) {
             insert(reallocated.get(i));
+        }
+    }
+
+    private long findEmptySpace(RandomAccessFile raf) throws IOException{
+        raf.seek(0);
+        boolean found = false;
+        long propL = 0;
+        while(!found && raf.getFilePointer() != raf.length()) {
+            Bucket prop = new Bucket(raf, bucketLength);
+            propL = prop.toByteArray().length;
+            if(prop.p == 0){
+                found = true;
+            }
+        }
+        if(found){
+            raf.seek(raf.getFilePointer() - propL);
+            return raf.getFilePointer();
+        }else{
+            return raf.getFilePointer();
         }
     }
 
@@ -121,6 +144,41 @@ public class ExtendedHash implements HashInterface {
         raf.close();
         rafBucket.close();
         return updated;
+    }
+
+    public boolean remove(int id) throws IOException{
+        RandomAccessFile raf = new RandomAccessFile(hashTablePath, "rw");
+        int bucketNumber = hash(id);
+        raf.seek(4 + (bucketNumber * 8L));
+        long bucketAddress = raf.readLong();
+        RandomAccessFile rafBucket = new RandomAccessFile(bucketsTablePath, "rw");
+        rafBucket.seek(bucketAddress);
+        Bucket bucket = new Bucket(rafBucket, bucketLength);
+        boolean removed = bucket.remove(id);
+        int bucketItemsLength = bucket.getBucketItemsLength();
+        if(removed){
+            int possibleBucketNumber = hash(id, bucket.p-1);
+            raf.seek(4 + (possibleBucketNumber * 8L));
+            long possibleBucketAddress = raf.readLong();
+            rafBucket.seek(possibleBucketAddress);
+            Bucket possibleBucket = new Bucket(rafBucket, bucketLength);
+            int possibleBucketItemsLength = possibleBucket.getBucketItemsLength();
+            if(possibleBucketNumber != bucketNumber && bucket.p-1 != 0 && bucketItemsLength + possibleBucketItemsLength <= bucketLength){
+                for(int i = 0; i < bucketItemsLength; i++){
+                    possibleBucket.insertFreeSpace(bucket.keyAddressPairs[i]);
+                }
+                bucket.makeBlank();
+                rafBucket.seek(possibleBucketAddress);
+                rafBucket.write(possibleBucket.toByteArray());
+                raf.seek(4 + (bucketNumber * 8L));
+                raf.writeLong(possibleBucketAddress);
+            }
+            rafBucket.seek(bucketAddress);
+            rafBucket.write(bucket.toByteArray());
+        }
+        rafBucket.close();
+        raf.close();
+        return removed;
     }
 
     private void setParameters() {

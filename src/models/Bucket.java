@@ -104,6 +104,46 @@ public class Bucket implements HashInterface {
         return reallocated;
     }
 
+    public boolean remove(int id){
+        boolean found = false;
+        int i = 0;
+        while (!found && i < bucketLength) {
+            if (keyAddressPairs[i] != null && keyAddressPairs[i].key == id) found = true;
+            i++;
+        }
+        i--;
+        if (found) {
+            keyAddressPairs[i] = null;
+            if(i+1 != bucketLength){
+                for (int j = i; j < keyAddressPairs.length - 1; j++) {
+                    keyAddressPairs[j] = keyAddressPairs[j + 1];
+                }
+                keyAddressPairs[keyAddressPairs.length - 1] = null;
+            }
+            return true;
+        }
+        else return false;
+    }
+
+    public int getBucketItemsLength(){
+        int i = 0;
+        try {
+            while (keyAddressPairs[i] != null) {
+                i++;
+            }
+            return i;
+        } catch (IndexOutOfBoundsException err) {
+            return i;
+        }
+    }
+
+    public void makeBlank(){
+        for(int i = 0; i < bucketLength; i++){
+            keyAddressPairs[i] = null;
+        }
+        this.p = 0;
+    }
+
     public byte[] toByteArray() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);

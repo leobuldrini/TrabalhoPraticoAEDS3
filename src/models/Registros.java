@@ -48,11 +48,11 @@ public class Registros {
 
     public Breach retrieveBreachSequentially(int id) {
         Breach breach = new Breach();
+        boolean found = false;
         try {
             RandomAccessFile raf = new RandomAccessFile(filePath, "r");
             raf.seek(0);
             raf.readInt();
-            boolean found = false;
             int i = 1;
             while (raf.getFilePointer() < raf.length() && !found) {
                 byte lapide = raf.readByte();
@@ -78,7 +78,7 @@ public class Registros {
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-        return breach;
+        return found ? breach : null;
     }
 
     public void inserirRegistro(Breach breach){
@@ -131,7 +131,7 @@ public class Registros {
         }
     }
 
-    public Breach deletarRegistro(int id) {
+    public Breach deletarRegistroSequencial(int id) {
         Breach removed = new Breach();
         try {
             RandomAccessFile raf = new RandomAccessFile(filePath, "rw");
@@ -139,7 +139,9 @@ public class Registros {
             int currentId = 0;
             int registroLength = 0;
             raf.seek(4);
+            long prop1 = 0;
             while (!found && raf.getFilePointer() < raf.length()) {
+                prop1 = raf.getFilePointer();
                 boolean dead = raf.readByte() != 0;
                 registroLength = raf.readInt();
                 if (dead) {
@@ -148,14 +150,48 @@ public class Registros {
                 }
                 byte[] registroBytes = new byte[registroLength];
                 raf.read(registroBytes);
+                long prop4 = raf.getFilePointer();
                 removed.fromByteArray(registroBytes);
                 if (removed.id == id) {
                     found = true;
                 }
             }
             if (found) {
+                raf.seek(prop1);
+                long prop2 = raf.getFilePointer();
+                raf.write((byte) 0x01);
+            }
+            raf.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("Arquivo não encontrado");
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+        return removed;
+    }
+
+    public Breach deletarRegistro(int id){
+        Breach removed = new Breach();
+        try{
+            RandomAccessFile raf = new RandomAccessFile(filePath, "rw");
+            boolean found = false;
+            long removeAddress = extendedHashIndex.retrieveAddress(id);
+            raf.seek(removeAddress);
+            boolean dead = raf.readByte() != 0;
+            int registroLength = raf.readInt();
+            if (dead) {
+                return null;
+            }
+            byte[] registroBytes = new byte[registroLength];
+            raf.read(registroBytes);
+            removed.fromByteArray(registroBytes);
+            if (removed.id == id) {
+                found = true;
+            }
+            if (found) {
                 raf.seek(raf.getFilePointer() - registroLength - 5);
                 raf.write((byte) 0x01);
+                extendedHashIndex.remove(id);
             }
             raf.close();
         } catch (FileNotFoundException e) {

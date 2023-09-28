@@ -19,7 +19,7 @@ public class CRUDSequencial {
         this.registros = registros;
     }
 
-    private void menu(){
+    public void menu(){
         int op;
         do{
             printMenu();
@@ -61,7 +61,7 @@ public class CRUDSequencial {
                         System.out.print("Digite a data no formato DD/MM/YYYY do evento de ruptura: ");
                         inputDate = sc.nextLine();
                     }while (!isValidDate(inputDate));
-                    LocalDate date = LocalDate.parse(inputDate);
+                    LocalDate date = LocalDate.parse(inputDate, formatter);
                     System.out.print("Digite uma breve descrição do ocorrido: ");
                     String briefing = sc.nextLine();
                     System.out.print("Digite de qual setor pertence a empresa que sofreu a ruptura: ");
@@ -82,6 +82,7 @@ public class CRUDSequencial {
                     Breach oldBreach = registros.retrieveBreachSequentially(Integer.parseInt(inputIdUpdate));
                     System.out.println(oldBreach);
                     updateMenu(oldBreach);
+                    break;
                 case 5:
                     System.out.print("Digite o ID do registro que deseja remover: ");
                     String inputIdDelete;
@@ -97,7 +98,7 @@ public class CRUDSequencial {
                     }
                     int opDelete = Integer.parseInt(opInputDelete);
                     if(opDelete == 1){
-                        Breach deleted = registros.deletarRegistro(breachToDelete.id);
+                        Breach deleted = registros.deletarRegistroSequencial(breachToDelete.id);
                         System.out.println("Registro de id "+ deleted.id + " deletado!");
                     }
                     break;
@@ -176,6 +177,7 @@ public class CRUDSequencial {
             switch (op){
                 case 1:
                     anyChange = true;
+                    System.out.print("Digite o novo nome da empresa: ");
                     breach.company = sc.nextLine();
                     break;
                 case 2:
@@ -216,10 +218,10 @@ public class CRUDSequencial {
                 default:
                     break;
             }
-            System.out.println("Deseja realizar alguma outra alteração?\n(0)Não, já alterei o que eu precisava\n(1)Sim, quero atualizar outro dado");
+            System.out.println("Deseja realizar alguma outra alteração?\n(0) Não, já alterei o que eu precisava\n(1) Sim, quero atualizar outro dado");
             opInput = sc.nextLine();
             while (opInput.length() > 1 || opInput.charAt(0) < '0' || opInput.charAt(0) > '9'){
-                System.out.println("Deseja realizar alguma outra alteração?\n(0)Não, já alterei o que eu precisava\n(1)Sim, quero atualizar outro dado");
+                System.out.println("Deseja realizar alguma outra alteração?\n(0) Não, já alterei o que eu precisava\n(1) Sim, quero atualizar outro dado");
                 opInput = sc.nextLine();
             }
             op = Integer.parseInt(opInput);
