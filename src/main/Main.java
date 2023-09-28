@@ -19,7 +19,6 @@ public class Main {
         Registros r = new Registros(System.getProperty("user.dir") + "/src/dataset/breaches.db", bTree, exHash);
         CRUDMain crudMain = new CRUDMain(r);
         crudMain.menu();
-//        teste();
     }
 
     public static void loadTempBase() {
@@ -57,12 +56,6 @@ public class Main {
             r.inserirRegistro(b1);
             r.inserirRegistro(b2);
             r.inserirRegistro(b3);
-            Breach fakeBreach = new Breach();
-            fakeBreach.id = 2;
-            fakeBreach.company = "The Walt Disney Company and The official disney channel";
-            r.readAllBreaches();
-            System.out.println(r.retrieveBreachByBTree(2));
-            System.out.println(r.retrieveBreachByExtendedHash(2));
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
