@@ -1,8 +1,8 @@
 package DAO.indexes;
 
 public class KeyAddressPair {
-    int key;
-    long address;
+    public int key;
+    public long address;
 
     public KeyAddressPair(int key, long address){
         this.key = key;

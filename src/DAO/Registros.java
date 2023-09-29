@@ -2,6 +2,7 @@ package DAO;
 
 import DAO.indexes.BTree;
 import DAO.indexes.ExtendedHash;
+import DAO.indexes.InvertedIndex;
 import DAO.indexes.KeyAddressPair;
 import models.Breach;
 
@@ -9,16 +10,19 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
 
 public class Registros {
     final private String filePath;
     final private BTree bTreeIndex;
     final private ExtendedHash extendedHashIndex;
+    final private InvertedIndex invertedIndex;
 
-    public Registros(String filepath, BTree bTreeIndex, ExtendedHash extendedHash) {
+    public Registros(String filepath, BTree bTreeIndex, ExtendedHash extendedHash, InvertedIndex invertedIndex) {
         this.filePath = filepath;
         this.bTreeIndex = bTreeIndex;
         this.extendedHashIndex = extendedHash;
+        this.invertedIndex = invertedIndex;
     }
 
     ;
@@ -112,6 +116,7 @@ public class Registros {
             KeyAddressPair keyAddressPair = new KeyAddressPair(breach.id, raf.getFilePointer());
             bTreeIndex.addIndex(keyAddressPair);
             extendedHashIndex.insert(keyAddressPair);
+            invertedIndex.insert(breach.detailedStory, keyAddressPair.address);
             raf.write((byte) 0x00);
             raf.writeInt(Math.max(regLength, breachBytes.length));
             raf.write(breachBytes);
@@ -283,5 +288,13 @@ public class Registros {
             System.out.println("Erro no I/O do arquivo: " + err.getMessage());
         }
         return false;
+    }
+
+    public void listAllWords() throws IOException{
+        ArrayList<String> strings = invertedIndex.retrieveWords();
+        for(int i = 0; i < strings.size(); i++){
+            System.out.print(strings.get(i) + " ");
+        }
+        System.out.println(" ");
     }
 }

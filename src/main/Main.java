@@ -3,6 +3,7 @@ package main;
 import DAO.Registros;
 import DAO.indexes.BTree;
 import DAO.indexes.ExtendedHash;
+import DAO.indexes.InvertedIndex;
 import core.CRUDMain;
 import models.*;
 
@@ -19,7 +20,9 @@ public class Main {
     public static void main(String[] args) throws IOException {
         BTree bTree = new BTree(System.getProperty("user.dir") + "/src/dataset/index.btree", 8);
         ExtendedHash exHash = new ExtendedHash(4, System.getProperty("user.dir") + "/src/dataset/buckets.hash", System.getProperty("user.dir") + "/src/dataset/index.hash");
-        Registros r = new Registros(System.getProperty("user.dir") + "/src/dataset/breaches.db", bTree, exHash);
+        String[] stopWordsDesc = {"of", "a", "an", "the", "and", "for", "at", "least", "its", "-", "to", "\\.", ",", "from"};
+        InvertedIndex invertedIndex = new InvertedIndex( System.getProperty("user.dir") + "/src/dataset/", "description", stopWordsDesc);
+        Registros r = new Registros(System.getProperty("user.dir") + "/src/dataset/breaches.db", bTree, exHash, invertedIndex);
         CRUDMain crudMain = new CRUDMain(r);
         crudMain.menu();
     }
@@ -53,7 +56,9 @@ public class Main {
 
         BTree bTree = new BTree(System.getProperty("user.dir") + "/src/dataset/index.btree", 8);
         ExtendedHash exHash = new ExtendedHash(4, System.getProperty("user.dir") + "/src/dataset/buckets.hash", System.getProperty("user.dir") + "/src/dataset/index.hash");
-        Registros r = new Registros(System.getProperty("user.dir") + "/src/dataset/breaches.db", bTree, exHash);
+        String[] stopWordsDesc = {"of", "a", "an", "the", "and", "for", "at", "least", "its", "-", "to", "\\.", ",", "from"};
+        InvertedIndex invertedIndex = new InvertedIndex( System.getProperty("user.dir") + "/src/dataset/", "description", stopWordsDesc);
+        Registros r = new Registros(System.getProperty("user.dir") + "/src/dataset/breaches.db", bTree, exHash, invertedIndex);
         try {
             r.limparRegistros();
             r.inserirRegistro(b1);

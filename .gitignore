@@ -5,3 +5,4 @@ TrabalhoPraticoAEDS3.iml
 src/.DS_Store
 src/dataset/.DS_Store
 *.class
+*.invIndex

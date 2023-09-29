@@ -32,7 +32,7 @@ public class CRUDInvertedList {
             op = Integer.parseInt(input);
             switch (op) {
                 case 1:
-                    registros.readAllBreaches();
+                    registros.listAllWords();
                     break;
                 case 2:
                     String inputId;
@@ -122,12 +122,11 @@ public class CRUDInvertedList {
     }
 
     private void printMenu() {
-        System.out.println("\tBEM VINDO AO CRUD INDEXADO POR HASH\nEscolha sua ação:\n");
-        System.out.println("(1) Listar todos os breachs");
-        System.out.println("(2) Buscar um breach pelo ID");
-        System.out.println("(3) Adicionar um breach ao registro");
-        System.out.println("(4) Atualizar algum dado do breach");
-        System.out.println("(5) Remover um registro");
+        System.out.println("\tBEM VINDO AO CRUD INDEXADO POR LISTA INVERDIDA\nEscolha sua ação:\n");
+        System.out.println("(1) Listar todos as palavras");
+        System.out.println("(2) Buscar breachs por palavra");
+        System.out.println("(3) Adicionar uma palavra ao índice");
+        System.out.println("(5) Remover uma palavra");
         System.out.println("\n (0) Voltar");
     }
     private boolean isValidNumber(String input){

@@ -1,0 +1,160 @@
+package DAO.indexes;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Locale;
+
+public class InvertedIndex {
+    final private String path;
+    final private String[] stopWords;
+
+    public InvertedIndex(String path, String attr, String[] stopWords){
+        this.path = path + attr + "/";
+        this.stopWords = stopWords;
+    }
+
+    public ArrayList<Long> retrieveBreachsByWord(String term) throws IOException {
+        RandomAccessFile raf = new RandomAccessFile(path + term + ".invIndex", "rw");
+        long quantidadeDeDocumentos = raf.length() / 8;
+        ArrayList<Long> docs = new ArrayList<>();
+        for(int i = 0; i < quantidadeDeDocumentos; i++){
+            long address = raf.readLong();
+            docs.add(address);
+        }
+        raf.close();
+        return docs;
+    }
+
+    public ArrayList<String> retrieveWords() throws IOException{
+        RandomAccessFile raf = new RandomAccessFile(path + "__words.invIndex", "rw");
+        ArrayList<String> words = new ArrayList<>();
+        while(raf.getFilePointer() != raf.length()){
+            words.add(raf.readUTF());
+        }
+        raf.close();
+        return words;
+    }
+
+    private void createWordFile(String word) throws IOException {
+        new FileOutputStream(path + word + ".invIndex").close();
+        RandomAccessFile raf = new RandomAccessFile(path + "__words.invIndex", "rw");
+        raf.seek(raf.length());
+        raf.writeUTF(word);
+        raf.close();
+    }
+
+    public void insert(String source, long address) throws IOException {
+        source = source.replaceAll(",", "");
+        source = source.replaceAll("\\.", "");
+        source = source.replaceAll("–", "");
+        source = source.toLowerCase(Locale.ROOT);
+        String regex = "\\b(" + String.join("|", stopWords) + ")\\b";
+        source = source.replaceAll(regex, "");
+        String[] tokens = source.split(" ");
+        for(int i = 0; i < tokens.length; i++){
+            String token = tokens[i];
+            File f = new File(path + token + ".invIndex");
+            if(!f.exists()){
+                createWordFile(token);
+            }
+            RandomAccessFile raf = new RandomAccessFile(path + token + ".invIndex", "rw");
+            raf.seek(raf.length());
+            raf.writeLong(address);
+            raf.close();
+        }
+    }
+
+    public boolean removeWordFromIndex(String word) throws IOException{
+        File file = new File(path+word+".invIndex");
+        if(file.delete()){
+            RandomAccessFile raf = new RandomAccessFile(path + "__words.invIndex", "rw");
+            boolean found = false;
+            String currentWord = "";
+            long pointerToWord = -1;
+            while(!found && raf.getFilePointer() != raf.length()){
+                pointerToWord = raf.getFilePointer();
+                currentWord = raf.readUTF();
+                if (currentWord.equals(word)) {
+                    pointerToWord = raf.getFilePointer() - 2;
+                    found = true;
+                }
+            }
+            if (pointerToWord != -1) {
+                long endPosition = raf.getFilePointer();
+                long stringLength = endPosition - pointerToWord;
+
+                raf.seek(pointerToWord);
+
+                for (long i = pointerToWord; i < endPosition; i++) {
+                    raf.writeByte(0);
+                }
+
+                raf.seek(endPosition);
+
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = raf.read(buffer)) != -1) {
+                    raf.seek(raf.getFilePointer() - bytesRead - stringLength);
+                    raf.write(buffer, 0, bytesRead);
+                    raf.seek(raf.getFilePointer() + stringLength);
+                }
+
+                raf.setLength(raf.length() - stringLength);
+            } else {
+                System.out.println("String não encontrada no arquivo.");
+            }
+            raf.close();
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+    public void remove(long address) throws IOException{
+        ArrayList<String> words = retrieveWords();
+        for(int j = 0; j < words.size(); j++){
+            String word = words.get(j);
+            RandomAccessFile raf = new RandomAccessFile(path + word + ".invIndex", "rw");
+            long currentPosition;
+            long startPosition = -1;
+            while (raf.getFilePointer() < raf.length()) {
+                currentPosition = raf.getFilePointer();
+                long currentLong = raf.readLong();
+                if (currentLong == address) {
+                    startPosition = currentPosition;
+                    break;
+                }
+            }
+            if (startPosition != -1) {
+                long endPosition = raf.getFilePointer();
+                long longSize = 8; // Tamanho de um valor long em bytes
+
+                // Posiciona o ponteiro no início do valor long a ser removido
+                raf.seek(startPosition);
+
+                // Preenche o espaço com bytes nulos
+                for (long i = startPosition; i < endPosition; i++) {
+                    raf.writeByte(0);
+                }
+
+                // Posiciona o ponteiro após o valor long removido
+                raf.seek(endPosition);
+
+                // Lê e escreve os bytes subsequentes para preencher o espaço vazio
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = raf.read(buffer)) != -1) {
+                    raf.seek(raf.getFilePointer() - bytesRead - longSize);
+                    raf.write(buffer, 0, bytesRead);
+                    raf.seek(raf.getFilePointer() + longSize);
+                }
+
+                // Reduz o tamanho do arquivo
+                raf.setLength(raf.length() - longSize);
+            } else {
+                System.out.println("Valor long não encontrado no arquivo.");
+            }
+            raf.close();
+        }
+    }
+}
