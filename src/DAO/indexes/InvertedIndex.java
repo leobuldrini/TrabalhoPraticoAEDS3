@@ -34,7 +34,8 @@ public class InvertedIndex {
         raf.seek(0);
         int qnt = raf.readInt();
         int i = 0;
-        while(raf.getFilePointer() != raf.length()){
+        System.out.println("Total de palavras indexadas: " + qnt);
+        while(i<qnt){
             String finalP = raf.readUTF();
             i++;
             if(i+3 <= qnt){
@@ -95,6 +96,15 @@ public class InvertedIndex {
         }
     }
 
+    public boolean insertWordToIndex(String word) throws IOException{
+        boolean alreadyExists = checkIfWordExists(word);
+        if(!alreadyExists){
+            createWordFile(word);
+            return true;
+        }
+        return false;
+    }
+
     public boolean removeWordFromIndex(String word) throws IOException{
         File file = new File(path+word+".invIndex");
         if(file.delete()){
@@ -108,13 +118,16 @@ public class InvertedIndex {
                 pointerToWord = raf.getFilePointer();
                 currentWord = raf.readUTF();
                 if (currentWord.equals(word)) {
-                    pointerToWord = raf.getFilePointer() - 2;
                     found = true;
                 }
             }
-            if (pointerToWord != -1) {
+            if (found) {
                 long endPosition = raf.getFilePointer();
                 long stringLength = endPosition - pointerToWord;
+
+                qnt--;
+                raf.seek(0);
+                raf.writeInt(qnt);
 
                 raf.seek(pointerToWord);
 
@@ -145,11 +158,15 @@ public class InvertedIndex {
 
     public void remove(long address) throws IOException{
         RandomAccessFile rafWords = new RandomAccessFile(path + "__words.invIndex", "rw");
+        ArrayList<String> wordsToRemove = new ArrayList<>();
         rafWords.seek(0);
         int qnt = rafWords.readInt();
         int j = 0;
         while(j < qnt) {
             String word = rafWords.readUTF();
+            if(word.equals("half")){
+                System.out.println("CALMA AI");
+            }
             RandomAccessFile raf = new RandomAccessFile(path + word + ".invIndex", "rw");
             long currentPosition;
             long startPosition = -1;
@@ -187,13 +204,15 @@ public class InvertedIndex {
 
                 // Reduz o tamanho do arquivo
                 raf.setLength(raf.length() - longSize);
-            } else {
-                System.out.println("Valor long não encontrado no arquivo.");
             }
+            if(raf.length() == 0) wordsToRemove.add(word);
             raf.close();
             j++;
         }
         rafWords.close();
+        for(int i = 0; i < wordsToRemove.size(); i++){
+            removeWordFromIndex(wordsToRemove.get(i));
+        }
     }
 
     public boolean checkIfWordExists(String term) throws IOException{
@@ -209,5 +228,17 @@ public class InvertedIndex {
         }
         raf.close();
         return found;
+    }
+
+    public boolean updateOneIndexWithAddress(String word, long address) throws IOException{
+        boolean fileExists = checkIfWordExists(word);
+        if(fileExists){
+            RandomAccessFile raf = new RandomAccessFile(path + word + ".invIndex", "rw");
+            raf.seek(raf.length());
+            raf.writeLong(address);
+            raf.close();
+            return true;
+        }
+        return false;
     }
 }

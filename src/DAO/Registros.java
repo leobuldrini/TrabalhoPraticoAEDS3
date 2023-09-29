@@ -211,6 +211,7 @@ public class Registros {
                 raf.seek(prop1);
                 raf.write((byte) 0x01);
                 extendedHashIndex.remove(id);
+                invertedIndex.remove(prop1);
             }
             raf.close();
         } catch (FileNotFoundException e) {
@@ -331,5 +332,39 @@ public class Registros {
         }
         raf.close();
         return results;
+    }
+
+    public boolean addWordToIndex(String word) throws IOException{
+        boolean fileCreated = invertedIndex.insertWordToIndex(word);
+        if(fileCreated){
+            RandomAccessFile raf = new RandomAccessFile(filePath, "r");
+            Breach breach = new Breach();
+            raf.seek(0);
+            int lastId = raf.readInt();
+            long prop1 = 0;
+            while (raf.getFilePointer() < raf.length()) {
+                prop1 = raf.getFilePointer();
+                byte lapide = raf.readByte();
+                int tamanhoRegistro = raf.readInt();
+                if (lapide == 0x01) {
+                    raf.seek(raf.getFilePointer() + tamanhoRegistro);
+                    continue;
+                }
+                byte[] registro = new byte[tamanhoRegistro];
+                raf.read(registro);
+                breach.fromByteArray(registro);
+                if(breach.detailedStory.contains(word)){
+                    invertedIndex.updateOneIndexWithAddress(word, prop1);
+                }
+            }
+            System.out.println("---------------------");
+            raf.close();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeWordFromIndex(String word) throws IOException{
+        return invertedIndex.removeWordFromIndex(word);
     }
 }
