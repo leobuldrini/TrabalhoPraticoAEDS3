@@ -139,6 +139,16 @@ public class Registros {
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
+        try {
+            new FileOutputStream(invertedIndex.path + "/__words.invIndex").close();
+            RandomAccessFile raf = new RandomAccessFile(invertedIndex.path + "/__words.invIndex", "rw");
+            raf.writeInt(0);
+            raf.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("Arquivo não encontrado");
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     public Breach deletarRegistroSequencial(int id) {
@@ -291,10 +301,35 @@ public class Registros {
     }
 
     public void listAllWords() throws IOException{
-        ArrayList<String> strings = invertedIndex.retrieveWords();
-        for(int i = 0; i < strings.size(); i++){
-            System.out.print(strings.get(i) + " ");
-        }
+        invertedIndex.retrieveWords();
         System.out.println(" ");
+    }
+
+    public boolean checkIfWordsExistInIndex(String term) throws IOException{
+        return invertedIndex.checkIfWordExists(term);
+    }
+
+    public Breach[] retrieveBreachesByWord(String word) throws IOException{
+        ArrayList<Long> addresses = invertedIndex.retrieveBreachsByWord(word);
+        Breach[] results = new Breach[addresses.size()];
+        RandomAccessFile raf = new RandomAccessFile(filePath, "r");
+        for(int i = 0; i < addresses.size(); i++){
+            long address = addresses.get(i);
+            if (address < 0) return null;
+            raf.seek(address);
+            Breach breach = new Breach();
+            byte lapide = raf.readByte();
+            int tamanhoRegistro = raf.readInt();
+            if (lapide == 0x01) {
+                raf.seek(raf.getFilePointer() + tamanhoRegistro);
+                return null;
+            }
+            byte[] registro = new byte[tamanhoRegistro];
+            raf.read(registro);
+            breach.fromByteArray(registro);
+            results[i] = breach;
+        }
+        raf.close();
+        return results;
     }
 }

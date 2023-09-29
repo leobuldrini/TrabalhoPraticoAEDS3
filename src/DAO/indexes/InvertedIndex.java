@@ -2,13 +2,17 @@ package DAO.indexes;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Locale;
+import java.util.Objects;
 
 public class InvertedIndex {
-    final private String path;
+    final public String path;
+    final public String attr;
     final private String[] stopWords;
 
     public InvertedIndex(String path, String attr, String[] stopWords){
+        this.attr = attr;
         this.path = path + attr + "/";
         this.stopWords = stopWords;
     }
@@ -25,19 +29,37 @@ public class InvertedIndex {
         return docs;
     }
 
-    public ArrayList<String> retrieveWords() throws IOException{
+    public void retrieveWords() throws IOException{
         RandomAccessFile raf = new RandomAccessFile(path + "__words.invIndex", "rw");
-        ArrayList<String> words = new ArrayList<>();
+        raf.seek(0);
+        int qnt = raf.readInt();
+        int i = 0;
         while(raf.getFilePointer() != raf.length()){
-            words.add(raf.readUTF());
+            String finalP = raf.readUTF();
+            i++;
+            if(i+3 <= qnt){
+                finalP += " - " + raf.readUTF() + " - " + raf.readUTF() + " - " + raf.readUTF();
+                i+=3;
+            } else if (i+2 <= qnt) {
+                finalP += " - " + raf.readUTF() + " - " + raf.readUTF();
+                i+=2;
+            } else if(i+1 <= qnt){
+                finalP += " - " + raf.readUTF();
+                i++;
+            }
+            System.out.println(finalP);
         }
         raf.close();
-        return words;
     }
 
     private void createWordFile(String word) throws IOException {
         new FileOutputStream(path + word + ".invIndex").close();
-        RandomAccessFile raf = new RandomAccessFile(path + "__words.invIndex", "rw");
+        RandomAccessFile raf = new RandomAccessFile(path + "/__words.invIndex", "rw");
+        raf.seek(0);
+        int qnt = raf.readInt();
+        qnt++;
+        raf.seek(0);
+        raf.writeInt(qnt);
         raf.seek(raf.length());
         raf.writeUTF(word);
         raf.close();
@@ -50,7 +72,16 @@ public class InvertedIndex {
         source = source.toLowerCase(Locale.ROOT);
         String regex = "\\b(" + String.join("|", stopWords) + ")\\b";
         source = source.replaceAll(regex, "");
+        source = source.replaceAll("[^a-zA-Z\s]", "");
+        while(source.contains("\s\s")){
+            source = source.replaceAll("\s\s", " ");
+        }
         String[] tokens = source.split(" ");
+        int index = 0;
+        for (int i=0; i<tokens.length; i++)
+            if (!Objects.equals(tokens[i], ""))
+                tokens[index++] = tokens[i];
+        tokens = Arrays.copyOf(tokens, index);
         for(int i = 0; i < tokens.length; i++){
             String token = tokens[i];
             File f = new File(path + token + ".invIndex");
@@ -71,6 +102,8 @@ public class InvertedIndex {
             boolean found = false;
             String currentWord = "";
             long pointerToWord = -1;
+            raf.seek(0);
+            int qnt = raf.readInt();
             while(!found && raf.getFilePointer() != raf.length()){
                 pointerToWord = raf.getFilePointer();
                 currentWord = raf.readUTF();
@@ -111,9 +144,12 @@ public class InvertedIndex {
     }
 
     public void remove(long address) throws IOException{
-        ArrayList<String> words = retrieveWords();
-        for(int j = 0; j < words.size(); j++){
-            String word = words.get(j);
+        RandomAccessFile rafWords = new RandomAccessFile(path + "__words.invIndex", "rw");
+        rafWords.seek(0);
+        int qnt = rafWords.readInt();
+        int j = 0;
+        while(j < qnt) {
+            String word = rafWords.readUTF();
             RandomAccessFile raf = new RandomAccessFile(path + word + ".invIndex", "rw");
             long currentPosition;
             long startPosition = -1;
@@ -155,6 +191,23 @@ public class InvertedIndex {
                 System.out.println("Valor long não encontrado no arquivo.");
             }
             raf.close();
+            j++;
         }
+        rafWords.close();
+    }
+
+    public boolean checkIfWordExists(String term) throws IOException{
+        boolean found = false;
+        RandomAccessFile raf = new RandomAccessFile(path + "__words.invIndex", "rw");
+        raf.seek(0);
+        int qnt = raf.readInt();
+        int i = 0;
+        while(!found && i < qnt) {
+            String foundP = raf.readUTF();
+            if(Objects.equals(term, foundP)) found = true;
+            i++;
+        }
+        raf.close();
+        return found;
     }
 }

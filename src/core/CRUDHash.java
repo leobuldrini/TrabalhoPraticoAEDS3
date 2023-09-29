@@ -127,7 +127,7 @@ public class CRUDHash {
     }
 
     private void printMenu() {
-        System.out.println("\tBEM VINDO AO CRUD INDEXADO POR HASH\nEscolha sua ação:\n");
+        System.out.println("\t\n\nBEM VINDO AO CRUD INDEXADO POR HASH\nEscolha sua ação:\n");
         System.out.println("(1) Listar todos os breachs");
         System.out.println("(2) Buscar um breach pelo ID");
         System.out.println("(3) Adicionar um breach ao registro");

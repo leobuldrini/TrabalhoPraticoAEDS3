@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Scanner;
 
@@ -35,16 +36,15 @@ public class CRUDInvertedList {
                     registros.listAllWords();
                     break;
                 case 2:
-                    String inputId;
+                    registros.listAllWords();
+                    String inputSearch = "";
                     do{
-                        System.out.print("Digite um id para realizar a busca: ");
-                        inputId = sc.nextLine();
-                    }while (!isValidNumber(inputId));
-                    Breach breach = registros.retrieveBreachByExtendedHash(Integer.parseInt(inputId));
-                    if(breach != null){
-                        System.out.println("\n" + breach);
-                    }else{
-                        System.out.println("Breach de id " + inputId + "não encontrado.");
+                        System.out.print("Digite a palavra que será buscada: ");
+                        inputSearch = sc.nextLine();
+                    }while (!registros.checkIfWordsExistInIndex(inputSearch));
+                    Breach[] results = registros.retrieveBreachesByWord(inputSearch);
+                    for(int i = 0; i < results.length; i++){
+                        System.out.println(results[i]);
                     }
                     break;
                 case 3:
@@ -122,7 +122,7 @@ public class CRUDInvertedList {
     }
 
     private void printMenu() {
-        System.out.println("\tBEM VINDO AO CRUD INDEXADO POR LISTA INVERDIDA\nEscolha sua ação:\n");
+        System.out.println("\t\n\nBEM VINDO AO CRUD INDEXADO POR LISTA INVERDIDA\nEscolha sua ação:\n");
         System.out.println("(1) Listar todos as palavras");
         System.out.println("(2) Buscar breachs por palavra");
         System.out.println("(3) Adicionar uma palavra ao índice");

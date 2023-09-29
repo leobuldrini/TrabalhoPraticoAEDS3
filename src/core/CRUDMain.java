@@ -69,7 +69,7 @@ public class CRUDMain {
     }
 
     private void printMenu() {
-        System.out.println("\tBEM VINDO AO CRUD DE BREACHS\nEscolha sua ação:\n");
+        System.out.println("\t\n\nBEM VINDO AO CRUD DE BREACHS\nEscolha sua ação:\n");
         System.out.println("(1) Utilizar o CRUD Sequencial");
         System.out.println("(2) Utilizar o CRUD Indexado por BTree");
         System.out.println("(3) Utilizar o CRUD Indexado por Hash Extendido");
