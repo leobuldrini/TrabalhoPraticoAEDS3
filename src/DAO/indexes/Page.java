@@ -1,4 +1,4 @@
-package models;
+package DAO.indexes;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;

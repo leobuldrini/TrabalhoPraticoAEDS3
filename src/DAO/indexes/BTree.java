@@ -1,4 +1,4 @@
-package models;
+package DAO.indexes;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;

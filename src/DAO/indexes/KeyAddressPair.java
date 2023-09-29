@@ -1,4 +1,4 @@
-package models;
+package DAO.indexes;
 
 public class KeyAddressPair {
     int key;

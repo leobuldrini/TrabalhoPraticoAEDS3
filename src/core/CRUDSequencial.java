@@ -1,7 +1,7 @@
 package core;
 
 import models.Breach;
-import models.Registros;
+import DAO.Registros;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

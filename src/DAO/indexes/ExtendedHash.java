@@ -1,4 +1,4 @@
-package models;
+package DAO.indexes;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;

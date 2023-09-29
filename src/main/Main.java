@@ -1,5 +1,8 @@
 package main;
 
+import DAO.Registros;
+import DAO.indexes.BTree;
+import DAO.indexes.ExtendedHash;
 import core.CRUDMain;
 import models.*;
 
