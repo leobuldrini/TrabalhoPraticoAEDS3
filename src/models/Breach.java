@@ -3,7 +3,10 @@ package models;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
@@ -29,7 +32,26 @@ public class Breach {
     };
     public Breach(){
         this.id = -1;
+        this.recordsLost = -1;
     };
+
+    public void update(Breach breach) {
+        if (breach.company != null && !breach.company.isEmpty()) {
+            this.company = breach.company;
+        }
+        if(breach.date != null && breach.date.isAfter(LocalDate.ofYearDay(1800, 1))){
+            this.date = breach.date;
+        }
+        if(breach.detailedStory != null && !breach.detailedStory.isEmpty()){
+            this.detailedStory = breach.detailedStory;
+        }
+        if(breach.recordsLost >= 0){
+            this.recordsLost = breach.recordsLost;
+        }
+        if(breach.sectorAndMethod != null && breach.sectorAndMethod.length > 0){
+            this.sectorAndMethod = breach.sectorAndMethod;
+        }
+    }
 
     public String toString(){
         DecimalFormat df= new DecimalFormat("#,##0.00");//formata o valor dos pontos
@@ -59,7 +81,7 @@ public class Breach {
         dos.writeInt(id);
         dos.writeUTF(company);
         dos.writeLong(recordsLost);
-        dos.writeUTF(date.toString());
+        dos.writeLong(date.atStartOfDay().toEpochSecond(ZoneOffset.UTC));
         dos.writeUTF(detailedStory);
         dos.writeUTF(fullList);
 
@@ -74,7 +96,8 @@ public class Breach {
         id=dis.readInt();
         company=dis.readUTF();
         recordsLost=dis.readLong();
-        date=LocalDate.parse(dis.readUTF(), formatter);
+        Instant instant = Instant.ofEpochSecond(dis.readLong());
+        date=instant.atZone(ZoneId.of("UTC")).toLocalDate();
         detailedStory=dis.readUTF();
 
         String fullList = dis.readUTF();
