@@ -114,6 +114,9 @@ public class Registros {
             if (espacoVago) {
                 raf.seek(raf.getFilePointer() - 5);
             }
+            if(breach.company.equals("T-Mobile")){
+                System.out.println("OPA");
+            }
             System.out.println("\n" + breach);
             KeyAddressPair keyAddressPair = new KeyAddressPair(breach.id, raf.getFilePointer());
             bTreeIndex.addIndex(keyAddressPair);

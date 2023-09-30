@@ -123,8 +123,8 @@ public class BTree {
         }
         fullChild.occuppied /= 2;
         if(!fullChild.isLeaf){
-            System.arraycopy(fullChild.pointers, (T/2) - 1, newPage.pointers, 0, T-1);
-            for(int i = T/2-1; i < T; i++){
+            System.arraycopy(fullChild.pointers, (T/2), newPage.pointers, 0, (T/2));
+            for(int i = T/2; i < T; i++){
                 fullChild.pointers[i] = -1;
             }
         }
