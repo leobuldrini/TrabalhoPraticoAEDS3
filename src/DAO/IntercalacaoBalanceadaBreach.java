@@ -1,6 +1,9 @@
 package DAO;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Scanner;
 import java.io.*;
 import java.util.PriorityQueue;
@@ -9,70 +12,42 @@ import java.time.LocalDate;
 import java.util.Locale;
 import java.text.DecimalFormat;
 import models.*;
+import java.util.*;
 
 public class IntercalacaoBalanceadaBreach {
 
-    public static void intercalacaoBalanceada(Breach[] breaches) throws Exception {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Digite o número de blocos: ");
-        int numBlocos = scanner.nextInt();
-        System.out.print("Digite o número de caminhos: ");
-        int numCaminhos = scanner.nextInt();
-        int tamanhoBloco = breaches.length / numBlocos;
+    public static List<Breach> intercalacaoBalanceada(List<Breach[]> breachArrays) {
+        List<Breach> result = new ArrayList<>();
+        PriorityQueue<BreachMergeHelper> pq = new PriorityQueue<>(Comparator.comparingInt(b -> b.breach.id));
 
-        // Dividir e ordenar os blocos, salvando em arquivos temporários
-        for (int i = 0; i < numBlocos; i++) {
-            int inicio = i * tamanhoBloco;
-            int fim = Math.min(inicio + tamanhoBloco, breaches.length);
-            Arrays.sort(breaches, inicio, fim, (a, b) -> Integer.compare(a.id, b.id));
-            try (DataOutputStream dos = new DataOutputStream(new FileOutputStream("temp" + i + ".bin"))) {
-                for (int j = inicio; j < fim; j++) {
-                    dos.write(breaches[j].toByteArray());
-                }
+        for (int i = 0; i < breachArrays.size(); i++) {
+            if (breachArrays.get(i).length > 0 && breachArrays.get(i)[0] != null) {
+                pq.add(new BreachMergeHelper(breachArrays.get(i)[0], i, 0));
             }
         }
 
-                // Intercalar os arquivos temporários usando os caminhos
-        PriorityQueue<Pair> pq = new PriorityQueue<>((a, b) -> Integer.compare(a.breach.id, b.breach.id));
-        DataInputStream[] readers = new DataInputStream[numBlocos];
-        byte[] buffer = new byte[1024]; // buffer para leitura
+        while (!pq.isEmpty()) {
+            BreachMergeHelper current = pq.poll();
+            result.add(current.breach);
 
-        for (int i = 0; i < numBlocos; i++) {
-            readers[i] = new DataInputStream(new FileInputStream("temp" + i + ".bin"));
-            if (readers[i].available() > 0) {
-                int bytesRead = readers[i].read(buffer);
-                Breach breach = new Breach();
-                breach.fromByteArray(Arrays.copyOf(buffer, bytesRead));
-                pq.add(new Pair(i, breach));
+            int nextIndex = current.arrayIndex + 1;
+            if (nextIndex < breachArrays.get(current.listIndex).length && breachArrays.get(current.listIndex)[nextIndex] != null) {
+                pq.add(new BreachMergeHelper(breachArrays.get(current.listIndex)[nextIndex], current.listIndex, nextIndex));
             }
         }
 
-        try (DataOutputStream dos = new DataOutputStream(new FileOutputStream("output.bin"))) {
-            while (!pq.isEmpty()) {
-                Pair pair = pq.poll();
-                dos.write(pair.breach.toByteArray());
-                if (readers[pair.index].available() > 0) {
-                    int bytesRead = readers[pair.index].read(buffer);
-                    Breach breach = new Breach();
-                    breach.fromByteArray(Arrays.copyOf(buffer, bytesRead));
-                    pq.add(new Pair(pair.index, breach));
-                }
-            }
-        }
-
-        for (DataInputStream reader : readers) {
-            reader.close();
-        }
+        return result;
     }
 
-static class Pair {
-        int index;
+    static class BreachMergeHelper {
         Breach breach;
+        int listIndex;
+        int arrayIndex;
 
-        Pair(int index, Breach breach) {
-            this.index = index;
+        public BreachMergeHelper(Breach breach, int listIndex, int arrayIndex) {
             this.breach = breach;
+            this.listIndex = listIndex;
+            this.arrayIndex = arrayIndex;
         }
     }
-
 }

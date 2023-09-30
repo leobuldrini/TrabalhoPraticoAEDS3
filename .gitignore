@@ -6,3 +6,4 @@ src/.DS_Store
 src/dataset/.DS_Store
 *.class
 *.invIndex
+!src/dataset/sector/__words.invIndex
