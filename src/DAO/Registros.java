@@ -167,16 +167,16 @@ public class Registros {
             } else {
                 System.err.println("O caminho especificado não é um diretório válido.");
             }
-        }
-        try {
-            new FileOutputStream(invertedIndex.path + "/__words.invIndex").close();
-            RandomAccessFile raf = new RandomAccessFile(invertedIndex.path + "/__words.invIndex", "rw");
-            raf.writeInt(0);
-            raf.close();
-        } catch (FileNotFoundException e) {
-            System.out.println("Arquivo não encontrado");
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
+            try {
+                new FileOutputStream(paths[i] + "/__words.invIndex").close();
+                RandomAccessFile raf = new RandomAccessFile(paths[i] + "/__words.invIndex", "rw");
+                raf.writeInt(0);
+                raf.close();
+            } catch (FileNotFoundException e) {
+                System.out.println("Arquivo não encontrado");
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+            }
         }
         try {
             new FileOutputStream("src/dataset/index.hash").close();
@@ -370,15 +370,44 @@ public class Registros {
     }
 
     public void listAllSectors() throws IOException {
-
+        invertedIndexSector.retrieveWords();
+        System.out.println(" ");
     }
 
     public boolean checkIfWordsExistInIndex(String term) throws IOException{
         return invertedIndex.checkIfWordExists(term);
     }
 
+    public boolean checkIfSectorExistInIndex(String term) throws IOException{
+        return invertedIndexSector.checkIfWordExists(term);
+    }
+
     public Breach[] retrieveBreachesByWord(String word) throws IOException{
         ArrayList<Long> addresses = invertedIndex.retrieveBreachsByWord(word);
+        Breach[] results = new Breach[addresses.size()];
+        RandomAccessFile raf = new RandomAccessFile(filePath, "r");
+        for(int i = 0; i < addresses.size(); i++){
+            long address = addresses.get(i);
+            if (address < 0) return null;
+            raf.seek(address);
+            Breach breach = new Breach();
+            byte lapide = raf.readByte();
+            int tamanhoRegistro = raf.readInt();
+            if (lapide == 0x01) {
+                raf.seek(raf.getFilePointer() + tamanhoRegistro);
+                return null;
+            }
+            byte[] registro = new byte[tamanhoRegistro];
+            raf.read(registro);
+            breach.fromByteArray(registro);
+            results[i] = breach;
+        }
+        raf.close();
+        return results;
+    }
+
+    public Breach[] retrieveBreachesBySector(String word) throws IOException{
+        ArrayList<Long> addresses = invertedIndexSector.retrieveBreachsByWord(word);
         Breach[] results = new Breach[addresses.size()];
         RandomAccessFile raf = new RandomAccessFile(filePath, "r");
         for(int i = 0; i < addresses.size(); i++){
@@ -431,8 +460,42 @@ public class Registros {
         return false;
     }
 
+    public boolean addSectorToIndex(String word) throws IOException{
+        boolean fileCreated = invertedIndexSector.insertWordToIndex(word);
+        if(fileCreated){
+            RandomAccessFile raf = new RandomAccessFile(filePath, "r");
+            Breach breach = new Breach();
+            raf.seek(0);
+            int lastId = raf.readInt();
+            long prop1 = 0;
+            while (raf.getFilePointer() < raf.length()) {
+                prop1 = raf.getFilePointer();
+                byte lapide = raf.readByte();
+                int tamanhoRegistro = raf.readInt();
+                if (lapide == 0x01) {
+                    raf.seek(raf.getFilePointer() + tamanhoRegistro);
+                    continue;
+                }
+                byte[] registro = new byte[tamanhoRegistro];
+                raf.read(registro);
+                breach.fromByteArray(registro);
+                if(breach.detailedStory.contains(word)){
+                    invertedIndexSector.updateOneIndexWithAddress(word, prop1);
+                }
+            }
+            System.out.println("---------------------");
+            raf.close();
+            return true;
+        }
+        return false;
+    }
+
     public boolean removeWordFromIndex(String word) throws IOException{
         return invertedIndex.removeWordFromIndex(word);
+    }
+
+    public boolean removeSectorFromIndex(String word) throws IOException{
+        return invertedIndexSector.removeWordFromIndex(word);
     }
 
     public boolean isThereAny(){
