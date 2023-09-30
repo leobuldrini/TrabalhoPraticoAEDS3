@@ -175,5 +175,9 @@ public class BTree {
         }
     }
 
+    public boolean remove(int id) throws IOException{
+        updateKeyAddress(id, -1);
+        return true;
+    }
 
 }

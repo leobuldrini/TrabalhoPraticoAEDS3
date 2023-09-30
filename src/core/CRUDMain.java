@@ -15,6 +15,7 @@ public class CRUDMain {
     final CRUDHash crudHash;
     final CRUDBTree crudBTree;
     final CRUDInvertedList crudInvertedList;
+    final CRUDInvertedListSector crudInvertedListSector;
     boolean loaded = false;
     public CRUDMain(Registros registros){
         this.registros = registros;
@@ -22,6 +23,7 @@ public class CRUDMain {
         this.crudHash = new CRUDHash(registros);
         this.crudBTree = new CRUDBTree(registros);
         this.crudInvertedList = new CRUDInvertedList(registros);
+        this.crudInvertedListSector = new CRUDInvertedListSector(registros);
         this.loaded = registros.isThereAny();
     }
 
@@ -49,6 +51,9 @@ public class CRUDMain {
                     crudInvertedList.menu();
                     break;
                 case 5:
+                    crudInvertedListSector.menu();
+                    break;
+                case 6:
                     System.out.println("Tem certeza que deseja deletar toda a base de registros?\n(0)Não\n(1)Sim");
                     String opInputLimparRegistros = sc.nextLine();
                     while (opInputLimparRegistros.length() > 1 || opInputLimparRegistros.charAt(0) < '0' || opInputLimparRegistros.charAt(0) > '1'){
@@ -61,7 +66,7 @@ public class CRUDMain {
                     }
                     this.loaded = false;
                     break;
-                case 6:
+                case 7:
                     registros.convertCSVtoBreach(System.getProperty("user.dir") + "/src/dataset/breaches.csv");
                     loaded = true;
                     break;
@@ -80,10 +85,11 @@ public class CRUDMain {
         System.out.println("(1) Utilizar o CRUD Sequencial");
         System.out.println("(2) Utilizar o CRUD Indexado por BTree");
         System.out.println("(3) Utilizar o CRUD Indexado por Hash Extendido");
-        System.out.println("(4) Utilizar o CRUD Indexado por Lista Invertida");
-        System.out.println(loaded ? "(5) Limpar todos os registros": "");
-        System.out.println(loaded ? "" : "(6) Carregar os registros da base");
-        System.out.println(loaded ? "(7) Ordenar a base de arquivos": "");
+        System.out.println("(4) Utilizar o CRUD Indexado por Lista Invertida para descrição");
+        System.out.println("(5) Utilizar o CRUD Indexado por Lista Invertida para setores");
+        System.out.println(loaded ? "(6) Limpar todos os registros": "");
+        System.out.println(loaded ? "" : "(7) Carregar os registros da base");
+        System.out.println(loaded ? "(8) Ordenar a base de arquivos": "");
         System.out.println("\n (0) Sair");
     }
 }
