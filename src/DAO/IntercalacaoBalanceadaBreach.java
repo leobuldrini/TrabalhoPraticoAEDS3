@@ -65,7 +65,7 @@ public class IntercalacaoBalanceadaBreach {
         }
     }
 
-    static class Pair {
+static class Pair {
         int index;
         Breach breach;
 
