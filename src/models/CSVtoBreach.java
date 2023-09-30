@@ -16,13 +16,15 @@ public class CSVtoBreach {
             // Pular a primeira linha (cabeçalho)
             br.readLine();
             while ((line = br.readLine()) != null) {
-                String[] values = line.split(",");
+                String[] values = line.split(";");
                 int id = Integer.parseInt(values[0]);
                 String company = values[1];
                 long recordsLost = Long.parseLong(values[2]);
                 LocalDate date = LocalDate.parse(values[3]);
                 String detailedStory = values[4];
-                String[] sectorAndMethod = values[5].split(";"); // Supondo que os setores e métodos são separados por ponto e vírgula dentro da mesma coluna
+                String sector = values[5];
+                String method = values[6];
+                String[] sectorAndMethod = (sector + "," + method).split(","); // Concatenando sector e method e depois dividindo
 
                 Breach breach = new Breach(id, company, recordsLost, date, detailedStory, sectorAndMethod);
                 breaches.add(breach);
