@@ -62,7 +62,7 @@ public class CRUDMain {
                     this.loaded = false;
                     break;
                 case 6:
-                    Main.loadTempBase();
+                    registros.convertCSVtoBreach(System.getProperty("user.dir") + "/src/dataset/breaches.csv");
                     loaded = true;
                     break;
                 default:

@@ -7,12 +7,16 @@ import DAO.indexes.KeyAddressPair;
 import models.Breach;
 
 import java.io.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 public class Registros {
     final private String filePath;
-    final private BTree bTreeIndex;
-    final private ExtendedHash extendedHashIndex;
+    private BTree bTreeIndex;
+    private ExtendedHash extendedHashIndex;
     final private InvertedIndex invertedIndex;
 
     final private InvertedIndex invertedIndexSector;
@@ -111,6 +115,10 @@ public class Registros {
             if (espacoVago) {
                 raf.seek(raf.getFilePointer() - 5);
             }
+            if(breach.company.equals("T-Mobile")){
+                System.out.println("OPA");
+            }
+            System.out.println("\n" + breach);
             KeyAddressPair keyAddressPair = new KeyAddressPair(breach.id, raf.getFilePointer());
             bTreeIndex.addIndex(keyAddressPair);
             extendedHashIndex.insert(keyAddressPair);
@@ -170,6 +178,28 @@ public class Registros {
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
+        try {
+            new FileOutputStream("src/dataset/index.hash").close();
+            RandomAccessFile raf = new RandomAccessFile("src/dataset/index.hash", "rw");
+            raf.writeLong(0);
+            raf.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("Arquivo não encontrado");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        try {
+            new FileOutputStream("src/dataset/index.btree").close();
+            RandomAccessFile raf = new RandomAccessFile("src/dataset/index.btree", "rw");
+            raf.writeLong(0);
+            raf.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("Arquivo não encontrado");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        bTreeIndex = new BTree(bTreeIndex.path, bTreeIndex.T);
+        extendedHashIndex = new ExtendedHash(extendedHashIndex.bucketLength, extendedHashIndex.bucketsTablePath, extendedHashIndex.hashTablePath);
     }
 
     public Breach deletarRegistroSequencial(int id) {
@@ -416,5 +446,34 @@ public class Registros {
         }catch (IOException err){
             return false;
         }
+    }
+
+    public List<Breach> convertCSVtoBreach(String csvFilePath) throws IOException {
+        List<Breach> breaches = new ArrayList<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(csvFilePath))) {
+            String line;
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy").withLocale(Locale.US);
+            // Pular a primeira linha (cabeçalho)
+            br.readLine();
+            while ((line = br.readLine()) != null) {
+                String[] values = line.split(";");
+                int id = Integer.parseInt(values[15]);
+                String company = values[0];
+                long recordsLost = Long.parseLong(values[2].replaceAll(",", ""));
+                values[4] = "01 " + values[4];
+                values[4] = values[4].replaceAll("  ", " ");
+                LocalDate date = LocalDate.parse(values[4], formatter);
+                String detailedStory = values[5];
+                String sector = values[6];
+                String method = values[7];
+                String[] sectorAndMethod = (sector + "," + method).split(","); // Concatenando sector e method e depois dividindo
+
+                Breach breach = new Breach(id, company, recordsLost, date, detailedStory, sectorAndMethod);
+                inserirRegistro(breach);
+            }
+        }
+
+        return breaches;
     }
 }
