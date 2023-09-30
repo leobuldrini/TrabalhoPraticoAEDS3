@@ -178,6 +178,8 @@ public class Registros {
             if (found) {
                 raf.seek(prop1);
                 raf.write((byte) 0x01);
+                extendedHashIndex.remove(id);
+                invertedIndex.remove(prop1);
             }
             raf.close();
         } catch (FileNotFoundException e) {
@@ -282,6 +284,8 @@ public class Registros {
             if (canFit) {
                 raf.seek(add);
                 raf.write(updatedBreach);
+                invertedIndex.remove(address);
+                invertedIndex.insert(breach.detailedStory, address);
             } else {
                 raf.seek(add - 5);
                 raf.write((byte) 0x01);
@@ -291,6 +295,8 @@ public class Registros {
                 raf.writeInt(updatedBreach.length);
                 bTreeIndex.updateKeyAddress(breach.id, newAddress);
                 extendedHashIndex.updateKeyAddress(breach.id, newAddress);
+                invertedIndex.remove(address);
+                invertedIndex.insert(breach.detailedStory, newAddress);
                 raf.write(updatedBreach);
             }
             raf.close();
@@ -366,5 +372,18 @@ public class Registros {
 
     public boolean removeWordFromIndex(String word) throws IOException{
         return invertedIndex.removeWordFromIndex(word);
+    }
+
+    public boolean isThereAny(){
+        try {
+            RandomAccessFile raf = new RandomAccessFile(filePath, "r");
+            Breach breach = new Breach();
+            raf.seek(0);
+            int lastId = raf.readInt();
+            raf.close();
+            return lastId != -1;
+        }catch (IOException err){
+            return false;
+        }
     }
 }

@@ -15,13 +15,14 @@ public class CRUDMain {
     final CRUDHash crudHash;
     final CRUDBTree crudBTree;
     final CRUDInvertedList crudInvertedList;
-    static boolean loaded = false;
+    boolean loaded = false;
     public CRUDMain(Registros registros){
         this.registros = registros;
         this.crudSequencial = new CRUDSequencial(registros);
         this.crudHash = new CRUDHash(registros);
         this.crudBTree = new CRUDBTree(registros);
         this.crudInvertedList = new CRUDInvertedList(registros);
+        this.loaded = registros.isThereAny();
     }
 
     public void menu() throws IOException {
@@ -61,6 +62,7 @@ public class CRUDMain {
                     break;
                 case 6:
                     Main.loadTempBase();
+                    loaded = true;
                     break;
                 default:
                     break;
@@ -76,6 +78,7 @@ public class CRUDMain {
         System.out.println("(4) Utilizar o CRUD Indexado por Lista Invertida");
         System.out.println("(5) Limpar todos os registros");
         System.out.println(loaded ? "" : "(6) Carregar os registros da base");
+        System.out.println(loaded ? "" : "(7) Ordenar a base de arquivos");
         System.out.println("\n (0) Sair");
     }
 }
