@@ -70,7 +70,7 @@ public class CRUDMain {
                     registros.convertCSVtoBreach(System.getProperty("user.dir") + "/src/dataset/breaches.csv");
                     loaded = true;
                     break;
-                case 7:
+                case 8:
                     registros.read100BreachesAndIntercalate();
                     loaded = true;
                     break;
