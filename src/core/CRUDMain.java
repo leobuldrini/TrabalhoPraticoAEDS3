@@ -59,6 +59,7 @@ public class CRUDMain {
                     if(opClear == 1){
                         registros.limparRegistros();
                     }
+                    this.loaded = false;
                     break;
                 case 6:
                     Main.loadTempBase();
@@ -76,9 +77,9 @@ public class CRUDMain {
         System.out.println("(2) Utilizar o CRUD Indexado por BTree");
         System.out.println("(3) Utilizar o CRUD Indexado por Hash Extendido");
         System.out.println("(4) Utilizar o CRUD Indexado por Lista Invertida");
-        System.out.println("(5) Limpar todos os registros");
+        System.out.println(loaded ? "(5) Limpar todos os registros": "");
         System.out.println(loaded ? "" : "(6) Carregar os registros da base");
-        System.out.println(loaded ? "" : "(7) Ordenar a base de arquivos");
+        System.out.println(loaded ? "(7) Ordenar a base de arquivos": "");
         System.out.println("\n (0) Sair");
     }
 }

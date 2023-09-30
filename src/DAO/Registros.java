@@ -6,10 +6,7 @@ import DAO.indexes.InvertedIndex;
 import DAO.indexes.KeyAddressPair;
 import models.Breach;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.util.ArrayList;
 
 public class Registros {
@@ -138,6 +135,26 @@ public class Registros {
             System.out.println("Arquivo não encontrado");
         } catch (IOException e) {
             System.out.println(e.getMessage());
+        }
+        File directory = new File(invertedIndex.path + "/");
+
+        // Verifica se o caminho especificado é um diretório
+        if (directory.isDirectory()) {
+            File[] files = directory.listFiles();
+
+            // Verifica se o diretório não está vazio
+            if (files != null) {
+                for (File file : files) {
+                    // Exclui cada arquivo individualmente
+                    if (file.isFile()) {
+                        if (!file.delete()) {
+                            System.err.println("Não foi possível excluir o arquivo: " + file.getName());
+                        }
+                    }
+                }
+            }
+        } else {
+            System.err.println("O caminho especificado não é um diretório válido.");
         }
         try {
             new FileOutputStream(invertedIndex.path + "/__words.invIndex").close();
