@@ -15,14 +15,15 @@ public class Registros {
     final private ExtendedHash extendedHashIndex;
     final private InvertedIndex invertedIndex;
 
-    public Registros(String filepath, BTree bTreeIndex, ExtendedHash extendedHash, InvertedIndex invertedIndex) {
+    final private InvertedIndex invertedIndexSector;
+
+    public Registros(String filepath, BTree bTreeIndex, ExtendedHash extendedHash, InvertedIndex invertedIndex, InvertedIndex invertedIndexSector) {
         this.filePath = filepath;
         this.bTreeIndex = bTreeIndex;
         this.extendedHashIndex = extendedHash;
         this.invertedIndex = invertedIndex;
+        this.invertedIndexSector = invertedIndexSector;
     }
-
-    ;
 
     public void readAllBreaches() {
         try {
@@ -114,6 +115,7 @@ public class Registros {
             bTreeIndex.addIndex(keyAddressPair);
             extendedHashIndex.insert(keyAddressPair);
             invertedIndex.insert(breach.detailedStory, keyAddressPair.address);
+            invertedIndexSector.insert(breach.sectorAndMethod[0], keyAddressPair.address);
             raf.write((byte) 0x00);
             raf.writeInt(Math.max(regLength, breachBytes.length));
             raf.write(breachBytes);
@@ -136,25 +138,27 @@ public class Registros {
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-        File directory = new File(invertedIndex.path + "/");
+        String[] paths = {invertedIndex.path, invertedIndexSector.path};
+        for(int i = 0; i < 2; i++){
+            File directory = new File(paths[i] + "/");
+            // Verifica se o caminho especificado é um diretório
+            if (directory.isDirectory()) {
+                File[] files = directory.listFiles();
 
-        // Verifica se o caminho especificado é um diretório
-        if (directory.isDirectory()) {
-            File[] files = directory.listFiles();
-
-            // Verifica se o diretório não está vazio
-            if (files != null) {
-                for (File file : files) {
-                    // Exclui cada arquivo individualmente
-                    if (file.isFile()) {
-                        if (!file.delete()) {
-                            System.err.println("Não foi possível excluir o arquivo: " + file.getName());
+                // Verifica se o diretório não está vazio
+                if (files != null) {
+                    for (File file : files) {
+                        // Exclui cada arquivo individualmente
+                        if (file.isFile()) {
+                            if (!file.delete()) {
+                                System.err.println("Não foi possível excluir o arquivo: " + file.getName());
+                            }
                         }
                     }
                 }
+            } else {
+                System.err.println("O caminho especificado não é um diretório válido.");
             }
-        } else {
-            System.err.println("O caminho especificado não é um diretório válido.");
         }
         try {
             new FileOutputStream(invertedIndex.path + "/__words.invIndex").close();
@@ -197,6 +201,7 @@ public class Registros {
                 raf.write((byte) 0x01);
                 extendedHashIndex.remove(id);
                 invertedIndex.remove(prop1);
+                invertedIndexSector.remove(prop1);
             }
             raf.close();
         } catch (FileNotFoundException e) {
@@ -231,6 +236,7 @@ public class Registros {
                 raf.write((byte) 0x01);
                 extendedHashIndex.remove(id);
                 invertedIndex.remove(prop1);
+                invertedIndexSector.remove(prop1);
             }
             raf.close();
         } catch (FileNotFoundException e) {
@@ -302,7 +308,9 @@ public class Registros {
                 raf.seek(add);
                 raf.write(updatedBreach);
                 invertedIndex.remove(address);
+                invertedIndexSector.remove(address);
                 invertedIndex.insert(breach.detailedStory, address);
+                invertedIndexSector.insert(breach.sectorAndMethod[0], address);
             } else {
                 raf.seek(add - 5);
                 raf.write((byte) 0x01);
@@ -313,7 +321,9 @@ public class Registros {
                 bTreeIndex.updateKeyAddress(breach.id, newAddress);
                 extendedHashIndex.updateKeyAddress(breach.id, newAddress);
                 invertedIndex.remove(address);
+                invertedIndexSector.remove(address);
                 invertedIndex.insert(breach.detailedStory, newAddress);
+                invertedIndexSector.insert(breach.sectorAndMethod[0], newAddress);
                 raf.write(updatedBreach);
             }
             raf.close();
@@ -327,6 +337,10 @@ public class Registros {
     public void listAllWords() throws IOException{
         invertedIndex.retrieveWords();
         System.out.println(" ");
+    }
+
+    public void listAllSectors() throws IOException {
+
     }
 
     public boolean checkIfWordsExistInIndex(String term) throws IOException{
