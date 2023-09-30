@@ -77,7 +77,7 @@ public class Registros {
                 breach.fromByteArray(registro);
                 if (breach.id == id) {
                     found = true;
-                }else{
+                } else {
                     System.out.print(i + " ");
                     i++;
                 }
@@ -92,7 +92,7 @@ public class Registros {
         return found ? breach : null;
     }
 
-    public void inserirRegistro(Breach breach){
+    public void inserirRegistro(Breach breach) {
         try {
             RandomAccessFile raf = new RandomAccessFile(filePath, "rw");
             int lastId = raf.readInt();
@@ -132,7 +132,7 @@ public class Registros {
         }
     }
 
-    public void limparRegistros(){
+    public void limparRegistros() {
         try {
             new FileOutputStream(filePath).close();
             RandomAccessFile raf = new RandomAccessFile(filePath, "rw");
@@ -144,7 +144,7 @@ public class Registros {
             System.out.println(e.getMessage());
         }
         String[] paths = {invertedIndex.path, invertedIndexSector.path};
-        for(int i = 0; i < 2; i++){
+        for (int i = 0; i < 2; i++) {
             File directory = new File(paths[i] + "/");
             // Verifica se o caminho especificado é um diretório
             if (directory.isDirectory()) {
@@ -175,9 +175,13 @@ public class Registros {
                 System.out.println(e.getMessage());
             }
         }
+        String userDir = System.getProperty("user.dir");
+        if (!userDir.contains("src")) {
+            userDir += "/src";
+        }
         try {
-            new FileOutputStream("src/dataset/index.hash").close();
-            RandomAccessFile raf = new RandomAccessFile("src/dataset/index.hash", "rw");
+            new FileOutputStream(userDir + "/dataset/index.hash").close();
+            RandomAccessFile raf = new RandomAccessFile(userDir + "/dataset/index.hash", "rw");
             raf.writeLong(0);
             raf.close();
         } catch (FileNotFoundException e) {
@@ -186,8 +190,8 @@ public class Registros {
             System.out.println(e.getMessage());
         }
         try {
-            new FileOutputStream("src/dataset/index.btree").close();
-            RandomAccessFile raf = new RandomAccessFile("src/dataset/index.btree", "rw");
+            new FileOutputStream(userDir + "/dataset/index.btree").close();
+            RandomAccessFile raf = new RandomAccessFile(userDir + "/dataset/index.btree", "rw");
             raf.writeLong(0);
             raf.close();
         } catch (FileNotFoundException e) {
@@ -240,9 +244,9 @@ public class Registros {
         return removed;
     }
 
-    public Breach deletarRegistro(int id){
+    public Breach deletarRegistro(int id) {
         Breach removed = new Breach();
-        try{
+        try {
             RandomAccessFile raf = new RandomAccessFile(filePath, "rw");
             boolean found = false;
             long removeAddress = extendedHashIndex.retrieveAddress(id);
@@ -363,7 +367,7 @@ public class Registros {
         return false;
     }
 
-    public void listAllWords() throws IOException{
+    public void listAllWords() throws IOException {
         invertedIndex.retrieveWords();
         System.out.println(" ");
     }
@@ -373,19 +377,19 @@ public class Registros {
         System.out.println(" ");
     }
 
-    public boolean checkIfWordsExistInIndex(String term) throws IOException{
+    public boolean checkIfWordsExistInIndex(String term) throws IOException {
         return invertedIndex.checkIfWordExists(term);
     }
 
-    public boolean checkIfSectorExistInIndex(String term) throws IOException{
+    public boolean checkIfSectorExistInIndex(String term) throws IOException {
         return invertedIndexSector.checkIfWordExists(term);
     }
 
-    public Breach[] retrieveBreachesByWord(String word) throws IOException{
+    public Breach[] retrieveBreachesByWord(String word) throws IOException {
         ArrayList<Long> addresses = invertedIndex.retrieveBreachsByWord(word);
         Breach[] results = new Breach[addresses.size()];
         RandomAccessFile raf = new RandomAccessFile(filePath, "r");
-        for(int i = 0; i < addresses.size(); i++){
+        for (int i = 0; i < addresses.size(); i++) {
             long address = addresses.get(i);
             if (address < 0) return null;
             raf.seek(address);
@@ -405,11 +409,11 @@ public class Registros {
         return results;
     }
 
-    public Breach[] retrieveBreachesBySector(String word) throws IOException{
+    public Breach[] retrieveBreachesBySector(String word) throws IOException {
         ArrayList<Long> addresses = invertedIndexSector.retrieveBreachsByWord(word);
         Breach[] results = new Breach[addresses.size()];
         RandomAccessFile raf = new RandomAccessFile(filePath, "r");
-        for(int i = 0; i < addresses.size(); i++){
+        for (int i = 0; i < addresses.size(); i++) {
             long address = addresses.get(i);
             if (address < 0) return null;
             raf.seek(address);
@@ -429,9 +433,9 @@ public class Registros {
         return results;
     }
 
-    public boolean addWordToIndex(String word) throws IOException{
+    public boolean addWordToIndex(String word) throws IOException {
         boolean fileCreated = invertedIndex.insertWordToIndex(word);
-        if(fileCreated){
+        if (fileCreated) {
             RandomAccessFile raf = new RandomAccessFile(filePath, "r");
             Breach breach = new Breach();
             raf.seek(0);
@@ -448,7 +452,7 @@ public class Registros {
                 byte[] registro = new byte[tamanhoRegistro];
                 raf.read(registro);
                 breach.fromByteArray(registro);
-                if(breach.detailedStory.contains(word)){
+                if (breach.detailedStory.contains(word)) {
                     invertedIndex.updateOneIndexWithAddress(word, prop1);
                 }
             }
@@ -459,9 +463,9 @@ public class Registros {
         return false;
     }
 
-    public boolean addSectorToIndex(String word) throws IOException{
+    public boolean addSectorToIndex(String word) throws IOException {
         boolean fileCreated = invertedIndexSector.insertWordToIndex(word);
-        if(fileCreated){
+        if (fileCreated) {
             RandomAccessFile raf = new RandomAccessFile(filePath, "r");
             Breach breach = new Breach();
             raf.seek(0);
@@ -478,7 +482,7 @@ public class Registros {
                 byte[] registro = new byte[tamanhoRegistro];
                 raf.read(registro);
                 breach.fromByteArray(registro);
-                if(breach.detailedStory.contains(word)){
+                if (breach.detailedStory.contains(word)) {
                     invertedIndexSector.updateOneIndexWithAddress(word, prop1);
                 }
             }
@@ -489,15 +493,15 @@ public class Registros {
         return false;
     }
 
-    public boolean removeWordFromIndex(String word) throws IOException{
+    public boolean removeWordFromIndex(String word) throws IOException {
         return invertedIndex.removeWordFromIndex(word);
     }
 
-    public boolean removeSectorFromIndex(String word) throws IOException{
+    public boolean removeSectorFromIndex(String word) throws IOException {
         return invertedIndexSector.removeWordFromIndex(word);
     }
 
-    public boolean isThereAny(){
+    public boolean isThereAny() {
         try {
             RandomAccessFile raf = new RandomAccessFile(filePath, "r");
             Breach breach = new Breach();
@@ -505,7 +509,7 @@ public class Registros {
             int lastId = raf.readInt();
             raf.close();
             return lastId != -1;
-        }catch (IOException err){
+        } catch (IOException err) {
             return false;
         }
     }
@@ -538,6 +542,7 @@ public class Registros {
 
         return breaches;
     }
+
     public void read100BreachesAndIntercalate() {
         try {
             List<Breach[]> allBreachArrays = new ArrayList<>();
@@ -567,21 +572,21 @@ public class Registros {
                 }
             }
             //if (cont > 0) {
-                //allBreachArrays.add(breachArray);
+            //allBreachArrays.add(breachArray);
             //}
             raf.close();
-    
+
             List<Breach> sortedBreaches = IntercalacaoBalanceadaBreach.intercalacaoBalanceada(allBreachArrays);
-            
+
             // Salva os registros intercalados em um arquivo binário
             try (FileOutputStream fos = new FileOutputStream("breachesSorted.bin");
-            BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+                 BufferedOutputStream bos = new BufferedOutputStream(fos)) {
                 for (Breach b : sortedBreaches) {
                     bos.write(b.toByteArray());
                 }
             }
             System.out.println(sortedBreaches);
-    
+
         } catch (FileNotFoundException e) {
             System.out.println("Arquivo não encontrado");
         } catch (Exception e) {
