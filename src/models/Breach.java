@@ -3,7 +3,10 @@ package models;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
@@ -78,7 +81,7 @@ public class Breach {
         dos.writeInt(id);
         dos.writeUTF(company);
         dos.writeLong(recordsLost);
-        dos.writeUTF(date.toString());
+        dos.writeLong(date.atStartOfDay().toEpochSecond(ZoneOffset.UTC));
         dos.writeUTF(detailedStory);
         dos.writeUTF(fullList);
 
@@ -93,7 +96,8 @@ public class Breach {
         id=dis.readInt();
         company=dis.readUTF();
         recordsLost=dis.readLong();
-        date=LocalDate.parse(dis.readUTF(), formatter);
+        Instant instant = Instant.ofEpochSecond(dis.readLong());
+        date=instant.atZone(ZoneId.of("UTC")).toLocalDate();
         detailedStory=dis.readUTF();
 
         String fullList = dis.readUTF();
