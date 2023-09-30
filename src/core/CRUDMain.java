@@ -67,7 +67,11 @@ public class CRUDMain {
                     this.loaded = false;
                     break;
                 case 7:
-                    registros.convertCSVtoBreach(System.getProperty("user.dir") + "/src/dataset/breaches.csv");
+                    String userDir = System.getProperty("user.dir");
+                    if(!userDir.contains("src")){
+                        userDir += "/src";
+                    }
+                    registros.convertCSVtoBreach(userDir + "/dataset/breaches.csv");
                     loaded = true;
                     break;
                 case 8:
