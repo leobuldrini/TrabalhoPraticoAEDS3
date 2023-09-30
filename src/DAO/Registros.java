@@ -114,10 +114,7 @@ public class Registros {
             if (espacoVago) {
                 raf.seek(raf.getFilePointer() - 5);
             }
-            if(breach.company.equals("T-Mobile")){
-                System.out.println("OPA");
-            }
-            System.out.println("\n" + breach);
+            System.out.println("\n" + breach.id + "\t" + breach.company);
             KeyAddressPair keyAddressPair = new KeyAddressPair(breach.id, raf.getFilePointer());
             bTreeIndex.addIndex(keyAddressPair);
             extendedHashIndex.insert(keyAddressPair);
@@ -461,5 +458,55 @@ public class Registros {
         }
 
         return breaches;
+    }
+    public void read100BreachesAndIntercalate() {
+        try {
+            List<Breach[]> allBreachArrays = new ArrayList<>();
+            Breach[] breachArray = new Breach[100];
+            RandomAccessFile raf = new RandomAccessFile(filePath, "r");
+            raf.seek(0);
+            int lastId = raf.readInt();
+            System.out.println("\n\n> Último id: " + lastId + "\n---------------------");
+            int cont = 0;
+            while (raf.getFilePointer() < raf.length()) {
+                Breach breach = new Breach();
+                byte lapide = raf.readByte();
+                int tamanhoRegistro = raf.readInt();
+                if (lapide == 0x01) {
+                    raf.seek(raf.getFilePointer() + tamanhoRegistro);
+                    continue;
+                }
+                byte[] registro = new byte[tamanhoRegistro];
+                raf.read(registro);
+                breach.fromByteArray(registro);
+                breachArray[cont] = breach;
+                cont++;
+                if (cont == 100) {
+                    allBreachArrays.add(breachArray);
+                    breachArray = new Breach[100];
+                    cont = 0;
+                }
+            }
+            //if (cont > 0) {
+                //allBreachArrays.add(breachArray);
+            //}
+            raf.close();
+    
+            List<Breach> sortedBreaches = IntercalacaoBalanceadaBreach.intercalacaoBalanceada(allBreachArrays);
+            
+            // Salva os registros intercalados em um arquivo binário
+            try (FileOutputStream fos = new FileOutputStream("breachesSorted.bin");
+            BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+                for (Breach b : sortedBreaches) {
+                    bos.write(b.toByteArray());
+                }
+            }
+            System.out.println(sortedBreaches);
+    
+        } catch (FileNotFoundException e) {
+            System.out.println("Arquivo não encontrado");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 }
