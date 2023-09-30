@@ -7,9 +7,9 @@ import java.io.RandomAccessFile;
 import java.util.List;
 
 public class ExtendedHash implements HashInterface {
-    final String bucketsTablePath;
-    final String hashTablePath;
-    final int bucketLength;
+    final public String bucketsTablePath;
+    final public String hashTablePath;
+    final public int bucketLength;
 
     int p;
 

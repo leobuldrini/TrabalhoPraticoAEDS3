@@ -73,9 +73,9 @@ public class InvertedIndex {
         source = source.toLowerCase(Locale.ROOT);
         String regex = "\\b(" + String.join("|", stopWords) + ")\\b";
         source = source.replaceAll(regex, "");
-        source = source.replaceAll("[^a-zA-Z\s]", "");
-        while(source.contains("\s\s")){
-            source = source.replaceAll("\s\s", " ");
+        source = source.replaceAll("[^a-zA-Z ]", "");
+        while(source.contains("  ")){
+            source = source.replaceAll("  ", " ");
         }
         String[] tokens = source.split(" ");
         int index = 0;

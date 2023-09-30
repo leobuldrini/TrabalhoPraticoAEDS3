@@ -5,10 +5,10 @@ import java.io.RandomAccessFile;
 
 public class BTree {
 
-    private long root = 0;
-    final private int T;
+    public long root = 0;
+    final public int T;
 
-    final private String path;
+    final public String path;
 
     public BTree(String path, int T){
         this.T = T;
@@ -62,7 +62,7 @@ public class BTree {
         }
     }
 
-    private void addNonFullIndex(RandomAccessFile raf, long pageAdd, KeyAddressPair keyAddressPair) throws IOException{
+    public void addNonFullIndex(RandomAccessFile raf, long pageAdd, KeyAddressPair keyAddressPair) throws IOException{
         raf.seek(pageAdd);
         Page page = new Page(raf, this.T);
         int i = page.occuppied - 1;
@@ -98,7 +98,7 @@ public class BTree {
         }
     }
 
-    private void split_child(RandomAccessFile raf, long dadAddress, int fullChildIndex) throws IOException{
+    public void split_child(RandomAccessFile raf, long dadAddress, int fullChildIndex) throws IOException{
         raf.seek(dadAddress);
         Page dad = new Page(raf, T);
         long fullChildAddress = dad.pointers[fullChildIndex];
@@ -135,7 +135,7 @@ public class BTree {
         raf.write(dad.toByteArray());
     }
 
-    private void setRoot(){
+    public void setRoot(){
         try{
             RandomAccessFile raf = new RandomAccessFile(path, "rw");
             raf.seek(0);
@@ -162,7 +162,7 @@ public class BTree {
         rafWrite.close();
     }
 
-    private void saveNodes(RandomAccessFile rafRead, RandomAccessFile rafWrite, long address) throws IOException{
+    public void saveNodes(RandomAccessFile rafRead, RandomAccessFile rafWrite, long address) throws IOException{
         rafRead.seek(address);
         Page page = new Page(rafRead, T);
         rafWrite.write(page.toByteArray());
