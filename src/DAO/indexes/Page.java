@@ -1,18 +1,24 @@
+//Arthur L F Pfeilsticker - 617553
+//Leonardo B Marques - 793952
 package DAO.indexes;
 
+// Importações de classes necessárias para o funcionamento do código.
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+// Classe pública que representa uma página em uma estrutura de árvore B.
 public class Page {
 
-    final private int n;
-    public int occuppied;
-    public KeyAddressPair[] elements;
-    public long[] pointers;
-    public boolean isLeaf;
+    // Variáveis de instância.
+    final private int n; // Ordem da árvore B.
+    public int occuppied; // Número de chaves ocupadas na página.
+    public KeyAddressPair[] elements; // Elementos da página.
+    public long[] pointers; // Ponteiros para outras páginas.
+    public boolean isLeaf; // Indica se a página é uma folha.
 
+    // Construtor que lê uma página de um arquivo.
     public Page(RandomAccessFile raf, int n) throws IOException {
         this.n = n;
         occuppied = raf.readInt();
@@ -23,13 +29,13 @@ public class Page {
             pointers[i] = raf.readLong();
             if (pointers[i] > 0) {
                 leaf = false;
-            }else{
+            } else {
                 pointers[i] = -1;
             }
             if (i < n - 1) {
                 int key = raf.readInt();
                 long add = raf.readLong();
-                if(key >= 0 && add > 0){
+                if (key >= 0 && add > 0) {
                     elements[i] = new KeyAddressPair(key, add);
                 }
             }
@@ -37,17 +43,19 @@ public class Page {
         this.isLeaf = leaf;
     }
 
+    // Construtor que cria uma nova página.
     public Page(int n, boolean leaf) {
         this.n = n;
         occuppied = 0;
         this.elements = new KeyAddressPair[n - 1];
         this.pointers = new long[n];
-        for(int i = 0; i < n; i++){
+        for (int i = 0; i < n; i++) {
             pointers[i] = -1;
         }
         this.isLeaf = leaf;
     }
 
+    // Método que busca um ID em uma árvore B e retorna o endereço associado.
     public long search(RandomAccessFile raf, int id, long address) throws IOException {
         raf.seek(address);
         Page page = new Page(raf, n);
@@ -66,6 +74,8 @@ public class Page {
         }
         return search(raf, id, page.pointers[i]);
     }
+
+    // Método que atualiza o endereço associado a um ID em uma árvore B.
     public boolean update(RandomAccessFile raf, long address, int id, long newAddress) throws IOException {
         raf.seek(address);
         Page page = new Page(raf, n);
@@ -87,13 +97,14 @@ public class Page {
         return update(raf, page.pointers[i], id, newAddress);
     }
 
-    private void writeNode(RandomAccessFile raf, long address) throws IOException{
+    // Método privado que escreve a página em um arquivo.
+    private void writeNode(RandomAccessFile raf, long address) throws IOException {
         raf.seek(address);
         raf.write(this.toByteArray());
     }
 
+    // Método que converte a página em um array de bytes.
     public byte[] toByteArray() throws IOException {
-
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
 
@@ -101,10 +112,10 @@ public class Page {
         int i;
         for (i = 0; i < n - 1; i++) {
             dos.writeLong(pointers[i]);
-            if(elements[i] != null){
+            if (elements[i] != null) {
                 dos.writeInt(elements[i].key);
                 dos.writeLong(elements[i].address);
-            }else{
+            } else {
                 dos.writeInt(-1);
                 dos.writeLong(-1);
             }

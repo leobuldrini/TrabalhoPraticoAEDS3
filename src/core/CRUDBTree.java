@@ -1,3 +1,5 @@
+//Arthur L F Pfeilsticker - 617553
+//Leonardo B Marques - 793952
 package core;
 
 import models.Breach;
@@ -10,15 +12,21 @@ import java.time.format.DateTimeParseException;
 import java.util.Locale;
 import java.util.Scanner;
 
+// Classe responsável por implementar as operações CRUD para a estrutura BTree
 public class CRUDBTree {
+    // Scanner para leitura de entrada do usuário
     final private Scanner sc = new Scanner(System.in);
+    // Objeto responsável por gerenciar os registros
     final Registros registros;
+    // Formato de data para a entrada do usuário
     final private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy").withLocale(Locale.US);
 
+    // Construtor da classe
     public CRUDBTree(Registros registros){
         this.registros = registros;
     }
 
+    // Método que exibe o menu principal e permite ao usuário escolher uma operação
     public void menu() throws IOException {
         int op;
         do{
@@ -34,6 +42,7 @@ public class CRUDBTree {
                     registros.readAllBreaches();
                     break;
                 case 2:
+                    // Busca um registro pelo ID
                     String inputId;
                     do{
                         System.out.print("Digite um id para realizar a busca: ");
@@ -47,6 +56,7 @@ public class CRUDBTree {
                     }
                     break;
                 case 3:
+                    // Adiciona um novo registro
                     System.out.println("NOVO BREACH!");
                     System.out.print("Digite a empresa que sofreu a ruptura de dados: ");
                     String company = sc.nextLine();
@@ -74,6 +84,7 @@ public class CRUDBTree {
                     System.out.println("Registro de id "+ newBreach.id + " adicionado!");
                     break;
                 case 4:
+                    // Atualiza um registro existente
                     System.out.print("Digite o ID do Breach que deseja atualizar: ");
                     String inputIdUpdate;
                     do{
@@ -84,6 +95,7 @@ public class CRUDBTree {
                     updateMenu(oldBreach);
                     break;
                 case 5:
+                    // Remove um registro
                     System.out.print("Digite o ID do registro que deseja remover: ");
                     String inputIdDelete;
                     do{
@@ -108,6 +120,7 @@ public class CRUDBTree {
         }while(op != 0);
     }
 
+    // Método que exibe o menu principal
     private void printMenu() {
         System.out.println("\t\n\nBEM VINDO AO CRUD INDEXADO POR BTREE\nEscolha sua ação:\n");
         System.out.println("(1) Listar todos os breachs");
@@ -117,6 +130,8 @@ public class CRUDBTree {
         System.out.println("(5) Remover um registro");
         System.out.println("\n (0) Voltar");
     }
+
+    // Método que verifica se a entrada é um número válido
     private boolean isValidNumber(String input){
         for(int i = 0; i < input.length(); i++){
             if(input.charAt(i) < '0' || input.charAt(i) > '9'){
@@ -126,6 +141,7 @@ public class CRUDBTree {
         return true;
     }
 
+    // Método que verifica se a entrada é uma data válida
     private boolean isValidDate(String input){
         try{
             LocalDate.parse(input, formatter);
@@ -135,6 +151,7 @@ public class CRUDBTree {
         }
     }
 
+    // Método que exibe o menu de atualização
     private void printUpdateMenu(){
         System.out.println("Qual o elemento que vc deseja realizar o update?");
         System.out.println("(1) Empresa");
@@ -146,6 +163,7 @@ public class CRUDBTree {
         System.out.println("\n(0) Voltar");
     }
 
+    // Método que permite ao usuário escolher qual atributo do registro deseja atualizar
     private void updateMenu(Breach oldBreach){
         int op;
         boolean anyChange = false;

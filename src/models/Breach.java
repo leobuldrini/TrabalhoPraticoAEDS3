@@ -1,3 +1,5 @@
+//Arthur L F Pfeilsticker - 617553
+//Leonardo B Marques - 793952
 package models;
 
 import java.io.*;
@@ -11,10 +13,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
 
+// Classe que representa uma violação de dados (Breach)
 public class Breach {
 
+    // Formato de data para a representação da data da violação
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.US);
 
+    // Atributos da classe
     public int id;
     public String company;
     public long recordsLost;
@@ -22,6 +27,7 @@ public class Breach {
     public String detailedStory;
     public String[] sectorAndMethod;
 
+    // Construtor completo da classe
     public Breach(int id, String company, long recordsLost, LocalDate date, String detailedStory, String[] sectorAndMethod){
         this.id = id;
         this.company = company;
@@ -30,11 +36,14 @@ public class Breach {
         this.detailedStory = detailedStory;
         this.sectorAndMethod = sectorAndMethod;
     };
+
+    // Construtor padrão da classe
     public Breach(){
         this.id = -1;
         this.recordsLost = -1;
     };
 
+    // Método para atualizar os atributos da instância atual com os valores de outra instância
     public void update(Breach breach) {
         if (breach.company != null && !breach.company.isEmpty()) {
             this.company = breach.company;
@@ -53,8 +62,9 @@ public class Breach {
         }
     }
 
+    // Método para converter a instância atual em uma representação de string
     public String toString(){
-        DecimalFormat df= new DecimalFormat("#,##0.00");//formata o valor dos pontos
+        DecimalFormat df= new DecimalFormat("#,##0.00"); // Formatação para exibir os registros perdidos
         String fullList = "";
         for(int i = 0; i < sectorAndMethod.length; i++){
             fullList += sectorAndMethod[i] + ",";
@@ -68,6 +78,7 @@ public class Breach {
                 "\nsectorAndMethod:"+ fullList;
     }
 
+    // Método para converter a instância atual em um array de bytes
     public byte[] toByteArray() throws IOException {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -88,6 +99,7 @@ public class Breach {
         return baos.toByteArray();
     }
 
+    // Método para preencher a instância atual com os valores de um array de bytes
     public void fromByteArray(byte ba[]) throws IOException{
 
         ByteArrayInputStream bais = new ByteArrayInputStream(ba);
