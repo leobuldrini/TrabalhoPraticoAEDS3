@@ -229,6 +229,7 @@ public class Registros {
             if (found) {
                 raf.seek(prop1);
                 raf.write((byte) 0x01);
+                bTreeIndex.remove(id);
                 extendedHashIndex.remove(id);
                 invertedIndex.remove(prop1);
                 invertedIndexSector.remove(prop1);
@@ -264,6 +265,7 @@ public class Registros {
             if (found) {
                 raf.seek(prop1);
                 raf.write((byte) 0x01);
+                bTreeIndex.remove(id);
                 extendedHashIndex.remove(id);
                 invertedIndex.remove(prop1);
                 invertedIndexSector.remove(prop1);
