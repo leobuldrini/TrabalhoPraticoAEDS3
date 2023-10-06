@@ -356,8 +356,8 @@ public class Registros {
                 raf.write(updatedBreach);
                 invertedIndex.remove(address);
                 invertedIndexSector.remove(address);
-                invertedIndex.insert(breach.detailedStory, address);
-                invertedIndexSector.insert(breach.sectorAndMethod[0], address);
+                invertedIndex.insert(oldBreach.detailedStory, address);
+                invertedIndexSector.insert(oldBreach.sectorAndMethod[0], address);
             } else {
                 raf.seek(add - 5);
                 raf.write((byte) 0x01);
@@ -365,12 +365,12 @@ public class Registros {
                 long newAddress = raf.getFilePointer();
                 raf.write((byte) 0x00);
                 raf.writeInt(updatedBreach.length);
-                bTreeIndex.updateKeyAddress(breach.id, newAddress);
-                extendedHashIndex.updateKeyAddress(breach.id, newAddress);
+                bTreeIndex.updateKeyAddress(oldBreach.id, newAddress);
+                extendedHashIndex.updateKeyAddress(oldBreach.id, newAddress);
                 invertedIndex.remove(address);
                 invertedIndexSector.remove(address);
-                invertedIndex.insert(breach.detailedStory, newAddress);
-                invertedIndexSector.insert(breach.sectorAndMethod[0], newAddress);
+                invertedIndex.insert(oldBreach.detailedStory, newAddress);
+                invertedIndexSector.insert(oldBreach.sectorAndMethod[0], newAddress);
                 raf.write(updatedBreach);
             }
             raf.close();
