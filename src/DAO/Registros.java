@@ -1,5 +1,8 @@
+//Arthur L F Pfeilsticker - 617553
+//Leonardo B Marques - 793952
 package DAO;
 
+// Importações de classes necessárias para o funcionamento do código.
 import DAO.indexes.BTree;
 import DAO.indexes.ExtendedHash;
 import DAO.indexes.InvertedIndex;
@@ -13,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+// Classe Registros que gerencia os registros de breaches.
 public class Registros {
     final private String filePath;
     private BTree bTreeIndex;
@@ -21,6 +25,7 @@ public class Registros {
 
     final private InvertedIndex invertedIndexSector;
 
+    // Construtor da classe.
     public Registros(String filepath, BTree bTreeIndex, ExtendedHash extendedHash, InvertedIndex invertedIndex, InvertedIndex invertedIndexSector) {
         this.filePath = filepath;
         this.bTreeIndex = bTreeIndex;
@@ -29,6 +34,7 @@ public class Registros {
         this.invertedIndexSector = invertedIndexSector;
     }
 
+    // Método para ler todos os registros de breach.
     public void readAllBreaches() {
         try {
             RandomAccessFile raf = new RandomAccessFile(filePath, "r");
@@ -57,6 +63,7 @@ public class Registros {
         }
     }
 
+    // Método para recuperar um registro de breach de forma sequencial.
     public Breach retrieveBreachSequentially(int id) {
         Breach breach = new Breach();
         boolean found = false;
@@ -92,6 +99,7 @@ public class Registros {
         return found ? breach : null;
     }
 
+    // Método para inserir um novo registro de breach.
     public void inserirRegistro(Breach breach) {
         try {
             RandomAccessFile raf = new RandomAccessFile(filePath, "rw");
@@ -132,6 +140,7 @@ public class Registros {
         }
     }
 
+    // Método para limpar todos os registros.
     public void limparRegistros() {
         try {
             new FileOutputStream(filePath).close();
@@ -203,6 +212,7 @@ public class Registros {
         extendedHashIndex = new ExtendedHash(extendedHashIndex.bucketLength, extendedHashIndex.bucketsTablePath, extendedHashIndex.hashTablePath);
     }
 
+    // Método para deletar um registro de breach de forma sequencial.
     public Breach deletarRegistroSequencial(int id) {
         Breach removed = new Breach();
         try {
@@ -244,6 +254,7 @@ public class Registros {
         return removed;
     }
 
+    // Método para deletar um registro de breach usando índices.
     public Breach deletarRegistro(int id) {
         Breach removed = new Breach();
         try {
@@ -280,6 +291,7 @@ public class Registros {
         return removed;
     }
 
+    // Método para recuperar um registro de breach usando BTree.
     public Breach retrieveBreachByBTree(int id) throws IOException {
         long address = bTreeIndex.retrieveBreachAddress(id);
         if (address < 0) return null;
@@ -299,6 +311,7 @@ public class Registros {
         return breach;
     }
 
+    // Método para recuperar um registro de breach usando hash estendido.
     public Breach retrieveBreachByExtendedHash(int id) throws IOException {
         long address = extendedHashIndex.retrieveAddress(id);
         if (address < 0) return null;
@@ -318,6 +331,7 @@ public class Registros {
         return breach;
     }
 
+    // Método para atualizar um registro de breach.
     public boolean updateBreach(Breach breach) {
         try {
             long address = bTreeIndex.retrieveBreachAddress(breach.id);
@@ -367,24 +381,29 @@ public class Registros {
         return false;
     }
 
+    // Método para listar todas as palavras no índice invertido.
     public void listAllWords() throws IOException {
         invertedIndex.retrieveWords();
         System.out.println(" ");
     }
 
+    // Método para listar todos os setores no índice invertido.
     public void listAllSectors() throws IOException {
         invertedIndexSector.retrieveWords();
         System.out.println(" ");
     }
 
+    // Método para verificar se uma palavra existe no índice invertido.
     public boolean checkIfWordsExistInIndex(String term) throws IOException {
         return invertedIndex.checkIfWordExists(term);
     }
 
+    // Método para verificar se um setor existe no índice invertido.
     public boolean checkIfSectorExistInIndex(String term) throws IOException {
         return invertedIndexSector.checkIfWordExists(term);
     }
 
+    // Método para recuperar registros de breach por palavra.
     public Breach[] retrieveBreachesByWord(String word) throws IOException {
         ArrayList<Long> addresses = invertedIndex.retrieveBreachsByWord(word);
         Breach[] results = new Breach[addresses.size()];
@@ -409,6 +428,7 @@ public class Registros {
         return results;
     }
 
+    // Método para recuperar registros de breach por setor.
     public Breach[] retrieveBreachesBySector(String word) throws IOException {
         ArrayList<Long> addresses = invertedIndexSector.retrieveBreachsByWord(word);
         Breach[] results = new Breach[addresses.size()];
@@ -433,6 +453,7 @@ public class Registros {
         return results;
     }
 
+    // Método para adicionar uma palavra ao índice invertido.
     public boolean addWordToIndex(String word) throws IOException {
         boolean fileCreated = invertedIndex.insertWordToIndex(word);
         if (fileCreated) {
@@ -463,6 +484,7 @@ public class Registros {
         return false;
     }
 
+    // Método para adicionar um setor ao índice invertido.
     public boolean addSectorToIndex(String word) throws IOException {
         boolean fileCreated = invertedIndexSector.insertWordToIndex(word);
         if (fileCreated) {
@@ -493,14 +515,17 @@ public class Registros {
         return false;
     }
 
+    // Método para remover uma palavra do índice invertido.
     public boolean removeWordFromIndex(String word) throws IOException {
         return invertedIndex.removeWordFromIndex(word);
     }
 
+    // Método para remover um setor do índice invertido.
     public boolean removeSectorFromIndex(String word) throws IOException {
         return invertedIndexSector.removeWordFromIndex(word);
     }
 
+    // Método para verificar se há algum registro no arquivo.
     public boolean isThereAny() {
         try {
             RandomAccessFile raf = new RandomAccessFile(filePath, "r");
@@ -513,7 +538,7 @@ public class Registros {
             return false;
         }
     }
-
+    // Método para converter um arquivo CSV em registros de breach.
     public List<Breach> convertCSVtoBreach(String csvFilePath) throws IOException {
         List<Breach> breaches = new ArrayList<>();
 
@@ -543,6 +568,7 @@ public class Registros {
         return breaches;
     }
 
+    //Realiza a intercalação balanceada usando tamanho de bloco = 100
     public void read100BreachesAndIntercalate() {
         try {
             List<Breach[]> allBreachArrays = new ArrayList<>();
@@ -571,16 +597,13 @@ public class Registros {
                     cont = 0;
                 }
             }
-            //if (cont > 0) {
-            //allBreachArrays.add(breachArray);
-            //}
             raf.close();
 
             List<Breach> sortedBreaches = IntercalacaoBalanceadaBreach.intercalacaoBalanceada(allBreachArrays);
 
             // Salva os registros intercalados em um arquivo binário
             try (FileOutputStream fos = new FileOutputStream("breachesSorted.bin");
-                 BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+                BufferedOutputStream bos = new BufferedOutputStream(fos)) {
                 for (Breach b : sortedBreaches) {
                     bos.write(b.toByteArray());
                 }

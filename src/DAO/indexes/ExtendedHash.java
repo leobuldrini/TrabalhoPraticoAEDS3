@@ -1,3 +1,5 @@
+//Arthur L F Pfeilsticker - 617553
+//Leonardo B Marques - 793952
 package DAO.indexes;
 
 import java.io.FileNotFoundException;
@@ -6,13 +8,17 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.List;
 
+// Classe que implementa um índice hash extensível
 public class ExtendedHash implements HashInterface {
+    //Atributos da classe
     final public String bucketsTablePath;
     final public String hashTablePath;
     final public int bucketLength;
 
+    // Variável que armazena o valor de p (profundidade global)
     int p;
 
+    // Construtor da classe
     public ExtendedHash(int bucketLength, String bucketsTablePath, String hashTablePath) {
         this.bucketsTablePath = bucketsTablePath;
         this.hashTablePath = hashTablePath;
@@ -20,14 +26,17 @@ public class ExtendedHash implements HashInterface {
         setParameters();
     }
 
+    // Função hash que retorna o valor hash de um ID
     public int hash(int id) {
         return (int) (id % (Math.pow(2, p)));
     }
 
+    // Função hash sobrecarregada que aceita um valor p específico
     public int hash(int id, int p) {
         return (int) (id % (Math.pow(2, p)));
     }
 
+    // Método para recuperar o endereço de um ID
     public long retrieveAddress(int id) {
         long addressFound = -1;
         int bucketNumber = hash(id);
@@ -48,6 +57,7 @@ public class ExtendedHash implements HashInterface {
         return addressFound;
     }
 
+    // Método para inserir um par key
     public void insert(KeyAddressPair keyAddressPair) {
         int bucketNumber = hash(keyAddressPair.key);
         try {
@@ -74,6 +84,7 @@ public class ExtendedHash implements HashInterface {
         }
     }
 
+    // Método privado para aumentar o valor de p de um bucket
     private void increaseBucketP(int bucketNumber, KeyAddressPair keyAddressPair) throws IOException {
         RandomAccessFile raf = new RandomAccessFile(hashTablePath, "rw");
         raf.seek(4 + (bucketNumber * 8L));
@@ -109,6 +120,7 @@ public class ExtendedHash implements HashInterface {
         }
     }
 
+    // Método privado para encontrar um espaço vazio
     private long findEmptySpace(RandomAccessFile raf) throws IOException{
         raf.seek(0);
         boolean found = false;
@@ -128,6 +140,7 @@ public class ExtendedHash implements HashInterface {
         }
     }
 
+    // Método para atualizar o endereço de uma chave
     public boolean updateKeyAddress(int id, long newAddress) throws IOException{
         RandomAccessFile raf = new RandomAccessFile(hashTablePath, "r");
         int bucketNumber = hash(id);
@@ -146,6 +159,7 @@ public class ExtendedHash implements HashInterface {
         return updated;
     }
 
+    // Método para remover uma chave
     public boolean remove(int id) throws IOException{
         RandomAccessFile raf = new RandomAccessFile(hashTablePath, "rw");
         int bucketNumber = hash(id);
@@ -181,6 +195,7 @@ public class ExtendedHash implements HashInterface {
         return removed;
     }
 
+    // Método privado para definir os parâmetros iniciais
     private void setParameters() {
         try {
             RandomAccessFile raf = new RandomAccessFile(hashTablePath, "rw");
@@ -215,6 +230,7 @@ public class ExtendedHash implements HashInterface {
     }
 }
 
+// Interface para a função hash
 interface HashInterface {
     int hash(int id);
 }

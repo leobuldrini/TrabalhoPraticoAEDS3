@@ -1,21 +1,29 @@
+//Arthur L F Pfeilsticker - 617553
+//Leonardo B Marques - 793952
 package DAO.indexes;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+// Classe que representa uma árvore B
 public class BTree {
 
+    // Endereço da raiz da árvore B
     public long root = 0;
+    // Grau mínimo da árvore B
     final public int T;
 
+    // Caminho do arquivo que armazena a árvore B
     final public String path;
 
+    // Construtor da árvore B
     public BTree(String path, int T){
         this.T = T;
         this.path = path;
         setRoot();
     }
 
+    // Método para buscar um ID na árvore B
     public boolean search(int id) throws IOException{
         RandomAccessFile raf = new RandomAccessFile(this.path, "r");
         raf.seek(root);
@@ -25,6 +33,7 @@ public class BTree {
         return found != -1;
     }
 
+    // Método para recuperar o endereço de uma violação associada a um ID
     public long retrieveBreachAddress(int id) throws IOException{
         RandomAccessFile raf = new RandomAccessFile(this.path, "r");
         raf.seek(root);
@@ -34,6 +43,7 @@ public class BTree {
         return found;
     }
 
+    // Método para atualizar o endereço associado a um ID
     public void updateKeyAddress(int id, long newAddress) throws IOException{
         RandomAccessFile raf = new RandomAccessFile(this.path, "rw");
         raf.seek(root);
@@ -42,6 +52,7 @@ public class BTree {
         raf.close();
     }
 
+    // Método para adicionar um índice à árvore B
     public void addIndex(KeyAddressPair keyAddressPair) throws IOException{
         RandomAccessFile raf = new RandomAccessFile(this.path, "rw");
         raf.seek(root);
@@ -62,6 +73,7 @@ public class BTree {
         }
     }
 
+    // Método para adicionar um índice a uma página não preenchida
     public void addNonFullIndex(RandomAccessFile raf, long pageAdd, KeyAddressPair keyAddressPair) throws IOException{
         raf.seek(pageAdd);
         Page page = new Page(raf, this.T);
@@ -98,6 +110,7 @@ public class BTree {
         }
     }
 
+    // Método para dividir uma página filho
     public void split_child(RandomAccessFile raf, long dadAddress, int fullChildIndex) throws IOException{
         raf.seek(dadAddress);
         Page dad = new Page(raf, T);
@@ -135,6 +148,7 @@ public class BTree {
         raf.write(dad.toByteArray());
     }
 
+    // Método para definir a raiz da árvore B
     public void setRoot(){
         try{
             RandomAccessFile raf = new RandomAccessFile(path, "rw");
@@ -153,6 +167,7 @@ public class BTree {
         }
     }
 
+    // Método para salvar o índice em um novo caminho
     public void saveIndex(String newPath) throws IOException{
         RandomAccessFile rafWrite = new RandomAccessFile(newPath, "rw");
         RandomAccessFile rafRead = new RandomAccessFile(path, "r");
@@ -162,6 +177,7 @@ public class BTree {
         rafWrite.close();
     }
 
+    // Método recursivo para salvar os nós da árvore B
     public void saveNodes(RandomAccessFile rafRead, RandomAccessFile rafWrite, long address) throws IOException{
         rafRead.seek(address);
         Page page = new Page(rafRead, T);
@@ -175,6 +191,7 @@ public class BTree {
         }
     }
 
+    // Método para remover um ID da árvore B
     public boolean remove(int id) throws IOException{
         updateKeyAddress(id, -1);
         return true;

@@ -1,3 +1,5 @@
+//Arthur L F Pfeilsticker - 617553
+//Leonardo B Marques - 793952
 package DAO.indexes;
 
 import java.io.*;
@@ -6,17 +8,21 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
 
+// Classe pública que representa um índice invertido.
 public class InvertedIndex {
+    // Variáveis de instância.
     final public String path;
     final public String attr;
     final private String[] stopWords;
 
+    // Construtor da classe que inicializa o índice invertido.
     public InvertedIndex(String path, String attr, String[] stopWords){
         this.attr = attr;
         this.path = path + attr + "/";
         this.stopWords = stopWords;
     }
 
+    // Método para recuperar violações por palavra.
     public ArrayList<Long> retrieveBreachsByWord(String term) throws IOException {
         RandomAccessFile raf = new RandomAccessFile(path + term + ".invIndex", "rw");
         long quantidadeDeDocumentos = raf.length() / 8;
@@ -29,6 +35,7 @@ public class InvertedIndex {
         return docs;
     }
 
+    // Método para recuperar palavras do índice.
     public void retrieveWords() throws IOException{
         RandomAccessFile raf = new RandomAccessFile(path + "__words.invIndex", "rw");
         raf.seek(0);
@@ -53,6 +60,7 @@ public class InvertedIndex {
         raf.close();
     }
 
+        // Método privado para criar um arquivo de palavra.
     private void createWordFile(String word) throws IOException {
         new FileOutputStream(path + word + ".invIndex").close();
         RandomAccessFile raf = new RandomAccessFile(path + "/__words.invIndex", "rw");
@@ -66,6 +74,7 @@ public class InvertedIndex {
         raf.close();
     }
 
+    // Método para inserir uma fonte no índice.
     public void insert(String source, long address) throws IOException {
         source = source.replaceAll(",", "");
         source = source.replaceAll("\\.", "");
@@ -96,6 +105,7 @@ public class InvertedIndex {
         }
     }
 
+    // Método para inserir uma palavra no índice.
     public boolean insertWordToIndex(String word) throws IOException{
         boolean alreadyExists = checkIfWordExists(word);
         if(!alreadyExists){
@@ -105,6 +115,7 @@ public class InvertedIndex {
         return false;
     }
 
+    // Método para remover uma palavra do índice.
     public boolean removeWordFromIndex(String word) throws IOException{
         File file = new File(path+word+".invIndex");
         if(file.delete()){
@@ -156,6 +167,7 @@ public class InvertedIndex {
         }
     }
 
+    // Método para remover um endereço do índice.
     public void remove(long address) throws IOException{
         RandomAccessFile rafWords = new RandomAccessFile(path + "__words.invIndex", "rw");
         ArrayList<String> wordsToRemove = new ArrayList<>();
@@ -165,7 +177,6 @@ public class InvertedIndex {
         while(j < qnt) {
             String word = rafWords.readUTF();
             if(word.equals("half")){
-                System.out.println("CALMA AI");
             }
             RandomAccessFile raf = new RandomAccessFile(path + word + ".invIndex", "rw");
             long currentPosition;
@@ -215,6 +226,7 @@ public class InvertedIndex {
         }
     }
 
+    // Método para verificar se uma palavra existe no índice.
     public boolean checkIfWordExists(String term) throws IOException{
         boolean found = false;
         RandomAccessFile raf = new RandomAccessFile(path + "__words.invIndex", "rw");
@@ -230,6 +242,7 @@ public class InvertedIndex {
         return found;
     }
 
+    // Método para atualizar um índice com um endereço.
     public boolean updateOneIndexWithAddress(String word, long address) throws IOException{
         boolean fileExists = checkIfWordExists(word);
         if(fileExists){

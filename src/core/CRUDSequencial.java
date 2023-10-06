@@ -1,3 +1,5 @@
+//Arthur L F Pfeilsticker - 617553
+//Leonardo B Marques - 793952
 package core;
 
 import models.Breach;
@@ -9,20 +11,27 @@ import java.time.format.DateTimeParseException;
 import java.util.Locale;
 import java.util.Scanner;
 
+// Classe responsável por gerenciar as operações CRUD sequenciais
 public class CRUDSequencial {
+    // Scanner para leitura de entrada do usuário
     final private Scanner sc = new Scanner(System.in);
+    // Objeto responsável por gerenciar os registros
     final Registros registros;
+    // Formatador para datas
     final private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy").withLocale(Locale.US);
 
+    // Construtor da classe
     public CRUDSequencial(Registros registros){
         this.registros = registros;
     }
 
+    // Método que exibe o menu principal e permite ao usuário escolher uma operação
     public void menu(){
         int op;
         do{
             printMenu();
             String input = sc.nextLine();
+            // Validação da entrada do usuário
             while (input.length() > 1 || input.charAt(0) < '0' || input.charAt(0) > '9'){
                 printMenu();
                 input = sc.nextLine();
@@ -30,9 +39,11 @@ public class CRUDSequencial {
             op = Integer.parseInt(input);
             switch (op) {
                 case 1:
+                    // Listar todos os registros
                     registros.readAllBreaches();
                     break;
                 case 2:
+                    // Buscar um registro pelo ID
                     String inputId;
                     do{
                         System.out.print("Digite um id para realizar a busca: ");
@@ -46,6 +57,7 @@ public class CRUDSequencial {
                     }
                     break;
                 case 3:
+                    // Adicionar um novo registro
                     System.out.println("NOVO BREACH!");
                     System.out.print("Digite a empresa que sofreu a ruptura de dados: ");
                     String company = sc.nextLine();
@@ -73,6 +85,7 @@ public class CRUDSequencial {
                     System.out.println("Registro de id "+ newBreach.id + " adicionado!");
                     break;
                 case 4:
+                    // Atualizar um registro existente
                     System.out.print("Digite o ID do Breach que deseja atualizar: ");
                     String inputIdUpdate;
                     do{
@@ -83,6 +96,7 @@ public class CRUDSequencial {
                     updateMenu(oldBreach);
                     break;
                 case 5:
+                    // Remover um registro
                     System.out.print("Digite o ID do registro que deseja remover: ");
                     String inputIdDelete;
                     do{
@@ -107,6 +121,7 @@ public class CRUDSequencial {
         }while(op != 0);
     }
 
+    // Método para validar se a entrada é um número válido
     private boolean isValidNumber(String input){
         for(int i = 0; i < input.length(); i++){
             if(input.charAt(i) < '0' || input.charAt(i) > '9'){
@@ -116,6 +131,7 @@ public class CRUDSequencial {
         return true;
     }
 
+    // Método para validar se a entrada é uma data válida
     private boolean isValidDate(String input){
         try{
             LocalDate.parse(input, formatter);
@@ -125,6 +141,7 @@ public class CRUDSequencial {
         }
     }
 
+    // Método que exibe o menu principal
     private void printMenu() {
         System.out.println("\t\n\nBEM VINDO AO CRUD SEQUENCIAL\nEscolha sua ação:\n");
         System.out.println("(1) Listar todos os breachs");
@@ -135,6 +152,7 @@ public class CRUDSequencial {
         System.out.println("\n (0) Voltar");
     }
 
+    // Método que exibe o menu de atualização
     private void printUpdateMenu(){
         System.out.println("Qual o elemento que vc deseja realizar o update?");
         System.out.println("(1) Empresa");
@@ -146,6 +164,7 @@ public class CRUDSequencial {
         System.out.println("\n(0) Voltar");
     }
 
+    // Método que permite ao usuário atualizar um registro
     private void updateMenu(Breach oldBreach){
         int op;
         boolean anyChange = false;

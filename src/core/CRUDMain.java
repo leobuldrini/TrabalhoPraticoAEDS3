@@ -1,3 +1,5 @@
+//Arthur L F Pfeilsticker - 617553
+//Leonardo B Marques - 793952
 package core;
 
 import main.Main;
@@ -6,17 +8,24 @@ import DAO.Registros;
 import java.io.IOException;
 import java.util.Scanner;
 
+// Classe principal responsável por gerenciar as operações CRUD para diferentes estruturas de dados
 public class CRUDMain {
 
+    // Scanner para leitura de entrada do usuário
     final private Scanner sc = new Scanner(System.in);
+    // Objeto responsável por gerenciar os registros
     final Registros registros;
 
+    // Objetos CRUD para diferentes estruturas de dados
     final CRUDSequencial crudSequencial;
     final CRUDHash crudHash;
     final CRUDBTree crudBTree;
     final CRUDInvertedList crudInvertedList;
     final CRUDInvertedListSector crudInvertedListSector;
+    // Flag para verificar se os registros foram carregados
     boolean loaded = false;
+
+    // Construtor da classe
     public CRUDMain(Registros registros){
         this.registros = registros;
         this.crudSequencial = new CRUDSequencial(registros);
@@ -27,11 +36,13 @@ public class CRUDMain {
         this.loaded = registros.isThereAny();
     }
 
+    // Método que exibe o menu principal e permite ao usuário escolher uma operação
     public void menu() throws IOException {
         int op;
         do{
             printMenu();
             String input = sc.nextLine();
+            // Validação da entrada do usuário
             while (input.length() > 1 || input.charAt(0) < '0' || input.charAt(0) > '9'){
                 printMenu();
                 input = sc.nextLine();
@@ -54,8 +65,10 @@ public class CRUDMain {
                     crudInvertedListSector.menu();
                     break;
                 case 6:
+                    // Opção para limpar todos os registros
                     System.out.println("Tem certeza que deseja deletar toda a base de registros?\n(0)Não\n(1)Sim");
                     String opInputLimparRegistros = sc.nextLine();
+                    // Validação da entrada do usuário
                     while (opInputLimparRegistros.length() > 1 || opInputLimparRegistros.charAt(0) < '0' || opInputLimparRegistros.charAt(0) > '1'){
                         System.out.println("Tem certeza que deseja deletar toda a base de registros?\n(0)Não\n(1)Sim");
                         opInputLimparRegistros = sc.nextLine();
@@ -67,6 +80,7 @@ public class CRUDMain {
                     this.loaded = false;
                     break;
                 case 7:
+                    // Opção para carregar registros da base
                     String userDir = System.getProperty("user.dir");
                     if(!userDir.contains("src")){
                         userDir += "/src";
@@ -75,6 +89,7 @@ public class CRUDMain {
                     loaded = true;
                     break;
                 case 8:
+                    // Opção para ordenar a base de arquivos
                     registros.read100BreachesAndIntercalate();
                     loaded = true;
                     break;
@@ -84,6 +99,7 @@ public class CRUDMain {
         }while(op != 0);
     }
 
+    // Método que exibe o menu principal
     private void printMenu() {
         System.out.println("\t\n\nBEM VINDO AO CRUD DE BREACHS\nEscolha sua ação:\n");
         System.out.println("(1) Utilizar o CRUD Sequencial");
