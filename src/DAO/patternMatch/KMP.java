@@ -21,8 +21,8 @@ public class KMP {
             }
             comparacoes++;
             if (j == patternLength) { // Chegou no último estado do autômato
-                System.out.println("Padrão encontrado na linha " + (currentLine) + " e coluna " + (i - j + 1));
-                System.out.println("Número de comparações necessário: " + comparacoes);
+                System.out.println("Padrão \"" + pat + "\" encontrado na linha " + currentLine + " na coluna " + (i - j + 1));
+                System.out.println("Número de comparações desde o último match ou inicio do arquivo: " + comparacoes);
                 comparacoes = 0;
                 j = lps[j - 1]; // Usa a função de falha para continuar a busca
             }

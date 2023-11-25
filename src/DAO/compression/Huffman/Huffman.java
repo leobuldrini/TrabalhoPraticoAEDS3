@@ -13,12 +13,15 @@ public class Huffman {
 
     public boolean isDecompressed;
 
+    public long originalFileSize = 0;
+
     HuffmanNode root;
 
     public Huffman(String source, boolean isDecompressed) throws IOException {
         StringBuilder strFull = new StringBuilder();
         RandomAccessFile raf = new RandomAccessFile(source, "r");
         long length = raf.length();
+        originalFileSize = length;
         while (raf.getFilePointer() != length) {
             strFull.append(raf.readLine());
         }
@@ -105,7 +108,7 @@ public class Huffman {
         raf.close();
     }
 
-    public void compress(int version) throws Exception {
+    public long compress(int version) throws Exception {
         String userDir = System.getProperty("user.dir");
 
         // Verifica se o diretório contém "src" e, se não, adiciona "/src" ao final
@@ -138,7 +141,9 @@ public class Huffman {
             }
         }
         bw.writeLastByte();
+        long size = raf.getFilePointer();
         raf.close();
+        return size;
     }
 
     public String decompress(int version) throws Exception {
@@ -155,6 +160,8 @@ public class Huffman {
         RandomAccessFile raf = new RandomAccessFile(directory + "/breachesHuffmanCompressao" + version + ".bin", "r");
         StringBuilder finalString = new StringBuilder();
         long length = raf.length();
+
+        System.out.println("Tamanho do arquivo comprimido: " + length + " bytes");
         while (raf.getFilePointer() != length) {
             byte b = raf.readByte();
             byteArray.add(b);

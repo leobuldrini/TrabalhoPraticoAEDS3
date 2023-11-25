@@ -3,30 +3,38 @@ import java.util.Arrays;
 
 public class BoyerMoore
 {
+    int comparacoes = 0;
 
-    public void findPattern(String t, String p)
+    public void findPattern(String t, String p, int currentLine)
     {
         char[] text = t.toCharArray();
-        char[] pattern = p.toCharArray();
-        indexOf(text, pattern);
+        indexOf(text, p, currentLine);
     }
 
-    public void indexOf(char[] text, char[] pattern)
+    public void indexOf(char[] text, String p, int currentLine)
     {
+        char[] pattern = p.toCharArray();
         if (pattern.length == 0)
             return;
         int[] charTable = makeCharTable(pattern);
         int[] offsetTable = makeOffsetTable(pattern);
+        comparacoes++;
         for (int i = pattern.length - 1, j; i < text.length;)
         {
-            for (j = pattern.length - 1; pattern[j] == text[i]; --i, --j)
+            comparacoes++;
+            for (j = pattern.length - 1; pattern[j] == text[i]; --i, --j) {
+                comparacoes++;
                 if (j == 0) {
-                    System.out.println("Pattern found at position : " + i);
+                    System.out.println("Padrão \"" + p + "\" encontrado na linha " + currentLine + " na coluna " + i);
+                    System.out.println("Número de comparações desde o último match ou inicio do arquivo: " + comparacoes);
+                    comparacoes = 0;
                     break;
                 }
-
+                comparacoes++;
+            }
             // i += pattern.length - j; // For naive method
             i += Math.max(offsetTable[pattern.length - 1 - j], charTable[text[i]]);
+            comparacoes++;
         }
     }
 

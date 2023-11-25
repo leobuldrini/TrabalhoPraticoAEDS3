@@ -79,7 +79,10 @@ public class Registros {
 
                 huffman.encode();
                 huffman.saveDictionary();
-                huffman.compress(++lastVersion);
+                long compressedSize = huffman.compress(++lastVersion);
+                System.out.println("Tamanho do arquivo original: " + huffman.originalFileSize + " bytes");
+                System.out.println("Tamanho do arquivo comprimido: " + compressedSize + " bytes");
+                System.out.println("Taxa de compressão: " + (1 - (double) compressedSize / huffman.originalFileSize) * 100 + "%");
 
             } else {
                 System.out.println("No files found in the directory.");
@@ -100,12 +103,15 @@ public class Registros {
 
         String directory = userDir + "/dataset/decompressed";
         String decompressed = huffman.decompress(chosenVersion);
-        new FileOutputStream(directory + "/breachesHuffmanCompressao" + chosenVersion + ".csv").close();
-        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(directory + "/breachesHuffmanCompressao" + chosenVersion + ".csv"))) {
+        new FileOutputStream(directory + "/breachesHuffmanDescomprimido" + chosenVersion + ".csv").close();
+        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(directory + "/breachesHuffmanDescomprimido" + chosenVersion + ".csv"))) {
             // Parse and format the data as CSV.
             // This might involve splitting the data into records and fields and writing them line by line.
             writer.write(decompressed);
         }
+        RandomAccessFile raf = new RandomAccessFile(directory + "/breachesHuffmanCompressao" + chosenVersion + ".csv", "rw");
+        long decompressedSize = raf.length();
+        System.out.println("Tamanho do arquivo descomprimido: " + decompressedSize + " bytes");
     }
 
     // Método para ler todos os registros de breach.
@@ -703,6 +709,8 @@ public class Registros {
         long length = raf.length();
         while(raf.getFilePointer() != length) {
             String line = raf.readLine();
+            line = line.toLowerCase();
+            pattern = pattern.toLowerCase();
             kmp.kmpSearch(pattern, line, currentLine);
             currentLine++;
         }
@@ -720,16 +728,15 @@ public class Registros {
 
         String a = userDir + "/dataset";
         RandomAccessFile raf = new RandomAccessFile(a + "/breaches.csv", "r");
-        StringBuilder source = new StringBuilder();
         int currentLine = 1;
         long length = raf.length();
         while(raf.getFilePointer() != length) {
             String line = raf.readLine();
             line = line.toLowerCase();
-            source.append(line);
+            pattern = pattern.toLowerCase();
+            boyerMoore.findPattern(line, pattern, currentLine);
+            currentLine++;
         }
-        String original = String.valueOf(source);
-        boyerMoore.findPattern(original, pattern);
         raf.close();
     }
 }
