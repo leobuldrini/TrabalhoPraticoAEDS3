@@ -3,13 +3,18 @@
 package DAO;
 
 // Importações de classes necessárias para o funcionamento do código.
+import DAO.compression.Huffman.Huffman;
 import DAO.indexes.BTree;
 import DAO.indexes.ExtendedHash;
 import DAO.indexes.InvertedIndex;
 import DAO.indexes.KeyAddressPair;
+import DAO.patternMatch.BoyerMoore;
+import DAO.patternMatch.KMP;
 import models.Breach;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -22,16 +27,91 @@ public class Registros {
     private BTree bTreeIndex;
     private ExtendedHash extendedHashIndex;
     final private InvertedIndex invertedIndex;
-
     final private InvertedIndex invertedIndexSector;
+    final private Huffman huffman;
+    final private KMP kmp;
+    final private BoyerMoore boyerMoore;
 
     // Construtor da classe.
-    public Registros(String filepath, BTree bTreeIndex, ExtendedHash extendedHash, InvertedIndex invertedIndex, InvertedIndex invertedIndexSector) {
+    public Registros(String filepath, BTree bTreeIndex, ExtendedHash extendedHash, InvertedIndex invertedIndex, InvertedIndex invertedIndexSector, Huffman huffman) {
         this.filePath = filepath;
         this.bTreeIndex = bTreeIndex;
         this.extendedHashIndex = extendedHash;
         this.invertedIndex = invertedIndex;
         this.invertedIndexSector = invertedIndexSector;
+        this.huffman = huffman;
+        this.kmp = new KMP();
+        this.boyerMoore = new BoyerMoore();
+    }
+
+    public void compress() throws Exception {
+        // Replace this with the path of your directory
+        String userDir = System.getProperty("user.dir");
+
+        // Verifica se o diretório contém "src" e, se não, adiciona "/src" ao final
+        if(!userDir.contains("src")){
+            userDir += "/src";
+        }
+
+
+        File directory = new File(userDir + "/dataset/compressed");
+
+        // Check if the directory exists and is indeed a directory
+        if (directory.exists() && directory.isDirectory()) {
+
+            // List all files in the directory
+            File[] files = directory.listFiles();
+
+            if (files != null) {
+                String[] fileNames = new String[files.length];
+                // Create an array to store the file names
+
+                int lastVersion = 0;
+
+                // Populate the array with the names of the files
+                for (int i = 0; i < files.length; i++) {
+                    fileNames[i] = files[i].getName();
+                    int version = Integer.parseInt(fileNames[i].charAt(fileNames[i].length() - 5) + "");
+                    if(version > lastVersion) {
+                        lastVersion = version;
+                    }
+                }
+
+                huffman.encode();
+                huffman.saveDictionary();
+                long compressedSize = huffman.compress(++lastVersion);
+                System.out.println("Tamanho do arquivo original: " + huffman.originalFileSize + " bytes");
+                System.out.println("Tamanho do arquivo comprimido: " + compressedSize + " bytes");
+                System.out.println("Taxa de compressão: " + (1 - (double) compressedSize / huffman.originalFileSize) * 100 + "%");
+
+            } else {
+                System.out.println("No files found in the directory.");
+            }
+        } else {
+            System.out.println("Directory does not exist or is not a directory.");
+        }
+    }
+
+    public void decompress(int chosenVersion) throws Exception {
+        // Replace this with the path of your directory
+        String userDir = System.getProperty("user.dir");
+
+        // Verifica se o diretório contém "src" e, se não, adiciona "/src" ao final
+        if(!userDir.contains("src")){
+            userDir += "/src";
+        }
+
+        String directory = userDir + "/dataset/decompressed";
+        String decompressed = huffman.decompress(chosenVersion);
+        new FileOutputStream(directory + "/breachesHuffmanDescomprimido" + chosenVersion + ".csv").close();
+        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(directory + "/breachesHuffmanDescomprimido" + chosenVersion + ".csv"))) {
+            // Parse and format the data as CSV.
+            // This might involve splitting the data into records and fields and writing them line by line.
+            writer.write(decompressed);
+        }
+        RandomAccessFile raf = new RandomAccessFile(directory + "/breachesHuffmanCompressao" + chosenVersion + ".csv", "rw");
+        long decompressedSize = raf.length();
+        System.out.println("Tamanho do arquivo descomprimido: " + decompressedSize + " bytes");
     }
 
     // Método para ler todos os registros de breach.
@@ -615,5 +695,48 @@ public class Registros {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    public void matchBYKMP(String pattern) throws Exception{
+        String userDir = System.getProperty("user.dir");
+        // Verifica se o diretório contém "src" e, se não, adiciona "/src" ao final
+        if(!userDir.contains("src")){
+            userDir += "/src";
+        }
+        String a = userDir + "/dataset";
+        RandomAccessFile raf = new RandomAccessFile(a + "/breaches.csv", "r");
+        int currentLine = 1;
+        long length = raf.length();
+        while(raf.getFilePointer() != length) {
+            String line = raf.readLine();
+            line = line.toLowerCase();
+            pattern = pattern.toLowerCase();
+            kmp.kmpSearch(pattern, line, currentLine);
+            currentLine++;
+        }
+        raf.close();
+    }
+
+    public void matchByBoyerMoore(String pattern) throws Exception {
+        String userDir = System.getProperty("user.dir");
+
+        // Verifica se o diretório contém "src" e, se não, adiciona "/src" ao final
+        if(!userDir.contains("src")){
+            userDir += "/src";
+        }
+
+
+        String a = userDir + "/dataset";
+        RandomAccessFile raf = new RandomAccessFile(a + "/breaches.csv", "r");
+        int currentLine = 1;
+        long length = raf.length();
+        while(raf.getFilePointer() != length) {
+            String line = raf.readLine();
+            line = line.toLowerCase();
+            pattern = pattern.toLowerCase();
+            boyerMoore.findPattern(line, pattern, currentLine);
+            currentLine++;
+        }
+        raf.close();
     }
 }
