@@ -1,22 +1,34 @@
-import java.io.FileOutputStream;
+package DAO.compression.Huffman;
+import java.io.*;
 import java.util.*;
-import java.io.RandomAccessFile;
 
 public class Huffman {
 
     private final String source;
 
-    Huffman() {
+    public Huffman() {
         this.source = "";
+        this.isDecompressed = false;
     }
+
+    public boolean isDecompressed;
 
     HuffmanNode root;
 
-    Huffman(String source) {
-        this.source = source;
+    public Huffman(String source, boolean isDecompressed) throws IOException {
+        StringBuilder strFull = new StringBuilder();
+        RandomAccessFile raf = new RandomAccessFile(source, "r");
+        long length = raf.length();
+        while (raf.getFilePointer() != length) {
+            strFull.append(raf.readLine());
+        }
+        raf.close();
+        this.source = strFull.toString();
+        this.isDecompressed = isDecompressed;
     }
 
     private final HashMap<Character, HashMap<Integer, byte[]>> dictionary = new HashMap<>();
+
 
     HashMap<String, Integer> elems(String source) {
         HashMap<String, Integer> map = new HashMap<>();
@@ -93,9 +105,18 @@ public class Huffman {
         raf.close();
     }
 
-    public void compress() throws Exception {
-        new FileOutputStream("compressed.bin").close();
-        RandomAccessFile raf = new RandomAccessFile("compressed.bin", "rw");
+    public void compress(int version) throws Exception {
+        String userDir = System.getProperty("user.dir");
+
+        // Verifica se o diretório contém "src" e, se não, adiciona "/src" ao final
+        if(!userDir.contains("src")){
+            userDir += "/src";
+        }
+
+
+        String directory = userDir + "/dataset/compressed";
+        new FileOutputStream(directory + "/breachesHuffmanCompressao" + version + ".bin").close();
+        RandomAccessFile raf = new RandomAccessFile(directory + "/breachesHuffmanCompressao" + version + ".bin", "rw");
         BitWriter bw = new BitWriter(raf);
         raf.seek(0);
         long stringLength = source.length();
@@ -120,9 +141,18 @@ public class Huffman {
         raf.close();
     }
 
-    public String decompress() throws Exception {
+    public String decompress(int version) throws Exception {
+        String userDir = System.getProperty("user.dir");
+
+        // Verifica se o diretório contém "src" e, se não, adiciona "/src" ao final
+        if(!userDir.contains("src")){
+            userDir += "/src";
+        }
+
+
+        String directory = userDir + "/dataset/compressed";
         List<Byte> byteArray = new ArrayList<>();
-        RandomAccessFile raf = new RandomAccessFile("compressed.bin", "r");
+        RandomAccessFile raf = new RandomAccessFile(directory + "/breachesHuffmanCompressao" + version + ".bin", "r");
         StringBuilder finalString = new StringBuilder();
         long length = raf.length();
         while (raf.getFilePointer() != length) {

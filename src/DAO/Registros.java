@@ -3,6 +3,7 @@
 package DAO;
 
 // Importações de classes necessárias para o funcionamento do código.
+import DAO.compression.Huffman.Huffman;
 import DAO.indexes.BTree;
 import DAO.indexes.ExtendedHash;
 import DAO.indexes.InvertedIndex;
@@ -10,6 +11,8 @@ import DAO.indexes.KeyAddressPair;
 import models.Breach;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -22,16 +25,81 @@ public class Registros {
     private BTree bTreeIndex;
     private ExtendedHash extendedHashIndex;
     final private InvertedIndex invertedIndex;
-
     final private InvertedIndex invertedIndexSector;
+    final private Huffman huffman;
 
     // Construtor da classe.
-    public Registros(String filepath, BTree bTreeIndex, ExtendedHash extendedHash, InvertedIndex invertedIndex, InvertedIndex invertedIndexSector) {
+    public Registros(String filepath, BTree bTreeIndex, ExtendedHash extendedHash, InvertedIndex invertedIndex, InvertedIndex invertedIndexSector, Huffman huffman) {
         this.filePath = filepath;
         this.bTreeIndex = bTreeIndex;
         this.extendedHashIndex = extendedHash;
         this.invertedIndex = invertedIndex;
         this.invertedIndexSector = invertedIndexSector;
+        this.huffman = huffman;
+    }
+
+    public void compress() throws Exception {
+        // Replace this with the path of your directory
+        String userDir = System.getProperty("user.dir");
+
+        // Verifica se o diretório contém "src" e, se não, adiciona "/src" ao final
+        if(!userDir.contains("src")){
+            userDir += "/src";
+        }
+
+
+        File directory = new File(userDir + "/dataset/compressed");
+
+        // Check if the directory exists and is indeed a directory
+        if (directory.exists() && directory.isDirectory()) {
+
+            // List all files in the directory
+            File[] files = directory.listFiles();
+
+            if (files != null) {
+                String[] fileNames = new String[files.length];
+                // Create an array to store the file names
+
+                int lastVersion = 0;
+
+                // Populate the array with the names of the files
+                for (int i = 0; i < files.length; i++) {
+                    fileNames[i] = files[i].getName();
+                    int version = Integer.parseInt(fileNames[i].charAt(fileNames[i].length() - 5) + "");
+                    if(version > lastVersion) {
+                        lastVersion = version;
+                    }
+                }
+
+                huffman.encode();
+                huffman.saveDictionary();
+                huffman.compress(++lastVersion);
+
+            } else {
+                System.out.println("No files found in the directory.");
+            }
+        } else {
+            System.out.println("Directory does not exist or is not a directory.");
+        }
+    }
+
+    public void decompress(int chosenVersion) throws Exception {
+        // Replace this with the path of your directory
+        String userDir = System.getProperty("user.dir");
+
+        // Verifica se o diretório contém "src" e, se não, adiciona "/src" ao final
+        if(!userDir.contains("src")){
+            userDir += "/src";
+        }
+
+        String directory = userDir + "/dataset/decompressed";
+        String decompressed = huffman.decompress(chosenVersion);
+        new FileOutputStream(directory + "/breachesHuffmanCompressao" + chosenVersion + ".csv").close();
+        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(directory + "/breachesHuffmanCompressao" + chosenVersion + ".csv"))) {
+            // Parse and format the data as CSV.
+            // This might involve splitting the data into records and fields and writing them line by line.
+            writer.write(decompressed);
+        }
     }
 
     // Método para ler todos os registros de breach.

@@ -3,6 +3,7 @@
 package main;
 
 import DAO.Registros;
+import DAO.compression.Huffman.Huffman;
 import DAO.indexes.BTree;
 import DAO.indexes.ExtendedHash;
 import DAO.indexes.InvertedIndex;
@@ -13,7 +14,7 @@ import java.io.IOException;
 public class Main {
 
     // Método principal
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         // Obtém o diretório do usuário atual
         String userDir = System.getProperty("user.dir");
         
@@ -36,10 +37,12 @@ public class Main {
         
         // Cria uma instância do índice invertido para a coluna "sector" ignorando as stop words
         InvertedIndex invertedIndexSector = new InvertedIndex(userDir + "/dataset/", "sector", stopWords);
+
+        Huffman huffman = new Huffman(userDir + "/dataset/breaches.csv", false);
         
         // Cria uma instância de registros usando os índices criados anteriormente
-        Registros r = new Registros(userDir + "/dataset/breaches.db", bTree, exHash, invertedIndex, invertedIndexSector);
-        
+        Registros r = new Registros(userDir + "/dataset/breaches.db", bTree, exHash, invertedIndex, invertedIndexSector, huffman);
+
         // Cria uma instância da classe CRUDMain e inicia o menu
         CRUDMain crudMain = new CRUDMain(r);
         crudMain.menu();

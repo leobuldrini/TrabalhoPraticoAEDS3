@@ -1,31 +1,7 @@
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+package DAO.patternMatch;
 import java.util.Arrays;
 
-public class Main {
-    public static void main(String[] args) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        RandomAccessFile raf = new RandomAccessFile("src/breaches.csv", "r");
-        StringBuilder source = new StringBuilder();
-        long length = raf.length();
-        while (raf.getFilePointer() != length) {
-            String line = raf.readLine();
-            line = line.toLowerCase();
-            source.append(line);
-        }
-        raf.close();
-        String original = String.valueOf(source);
-        System.out.println("\nEnter Pattern\n");
-        String pattern = br.readLine().toLowerCase();
-        BoyerMoore bm = new BoyerMoore();
-        bm.findPattern(original, pattern);
-    }
-}
-
-class BoyerMoore
+public class BoyerMoore
 {
 
     public void findPattern(String t, String p)
@@ -97,5 +73,4 @@ class BoyerMoore
             len += 1;
         return len;
     }
-    /** Main Function **/
 }

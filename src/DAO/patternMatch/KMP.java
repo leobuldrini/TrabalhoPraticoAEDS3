@@ -1,24 +1,6 @@
-import java.io.RandomAccessFile;
+package DAO.patternMatch;
 
-public class Main {
-
-
-    public static void main(String[] args) throws Exception {
-        KMP kmpSearch = new KMP();
-        RandomAccessFile raf = new RandomAccessFile("src/breaches.csv", "r");
-        long length = raf.length();
-        int currentLine = 1;
-        String pat = "plex";
-        while (raf.getFilePointer() != length) {
-            String line = raf.readLine();
-            kmpSearch.kmpSearch(pat, line, currentLine);
-            currentLine++;
-        }
-        raf.close();
-    }
-}
-
-class KMP {
+public class KMP {
     int comparacoes = 0;
     void kmpSearch(String pat, String txt, int currentLine) {
         int patternLength = pat.length();
