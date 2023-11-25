@@ -109,7 +109,7 @@ public class Registros {
             // This might involve splitting the data into records and fields and writing them line by line.
             writer.write(decompressed);
         }
-        RandomAccessFile raf = new RandomAccessFile(directory + "/breachesHuffmanCompressao" + chosenVersion + ".csv", "rw");
+        RandomAccessFile raf = new RandomAccessFile(directory + "/breachesHuffmanDescomprimido" + chosenVersion + ".csv", "rw");
         long decompressedSize = raf.length();
         System.out.println("Tamanho do arquivo descomprimido: " + decompressedSize + " bytes");
     }
