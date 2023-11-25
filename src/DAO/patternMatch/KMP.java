@@ -2,7 +2,7 @@ package DAO.patternMatch;
 
 public class KMP {
     int comparacoes = 0;
-    void kmpSearch(String pat, String txt, int currentLine) {
+    public void kmpSearch(String pat, String txt, int currentLine) {
         int patternLength = pat.length();
         int lineLength = txt.length();
         int[] lps = new int[patternLength];

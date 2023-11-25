@@ -8,6 +8,8 @@ import DAO.indexes.BTree;
 import DAO.indexes.ExtendedHash;
 import DAO.indexes.InvertedIndex;
 import DAO.indexes.KeyAddressPair;
+import DAO.patternMatch.BoyerMoore;
+import DAO.patternMatch.KMP;
 import models.Breach;
 
 import java.io.*;
@@ -27,6 +29,8 @@ public class Registros {
     final private InvertedIndex invertedIndex;
     final private InvertedIndex invertedIndexSector;
     final private Huffman huffman;
+    final private KMP kmp;
+    final private BoyerMoore boyerMoore;
 
     // Construtor da classe.
     public Registros(String filepath, BTree bTreeIndex, ExtendedHash extendedHash, InvertedIndex invertedIndex, InvertedIndex invertedIndexSector, Huffman huffman) {
@@ -36,6 +40,8 @@ public class Registros {
         this.invertedIndex = invertedIndex;
         this.invertedIndexSector = invertedIndexSector;
         this.huffman = huffman;
+        this.kmp = new KMP();
+        this.boyerMoore = new BoyerMoore();
     }
 
     public void compress() throws Exception {
@@ -683,5 +689,47 @@ public class Registros {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    public void matchBYKMP(String pattern) throws Exception{
+        String userDir = System.getProperty("user.dir");
+        // Verifica se o diretório contém "src" e, se não, adiciona "/src" ao final
+        if(!userDir.contains("src")){
+            userDir += "/src";
+        }
+        String a = userDir + "/dataset";
+        RandomAccessFile raf = new RandomAccessFile(a + "/breaches.csv", "r");
+        int currentLine = 1;
+        long length = raf.length();
+        while(raf.getFilePointer() != length) {
+            String line = raf.readLine();
+            kmp.kmpSearch(pattern, line, currentLine);
+            currentLine++;
+        }
+        raf.close();
+    }
+
+    public void matchByBoyerMoore(String pattern) throws Exception {
+        String userDir = System.getProperty("user.dir");
+
+        // Verifica se o diretório contém "src" e, se não, adiciona "/src" ao final
+        if(!userDir.contains("src")){
+            userDir += "/src";
+        }
+
+
+        String a = userDir + "/dataset";
+        RandomAccessFile raf = new RandomAccessFile(a + "/breaches.csv", "r");
+        StringBuilder source = new StringBuilder();
+        int currentLine = 1;
+        long length = raf.length();
+        while(raf.getFilePointer() != length) {
+            String line = raf.readLine();
+            line = line.toLowerCase();
+            source.append(line);
+        }
+        String original = String.valueOf(source);
+        boyerMoore.findPattern(original, pattern);
+        raf.close();
     }
 }

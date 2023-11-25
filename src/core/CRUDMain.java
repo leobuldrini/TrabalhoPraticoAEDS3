@@ -2,10 +2,8 @@
 //Leonardo B Marques - 793952
 package core;
 
-import main.Main;
 import DAO.Registros;
 
-import java.io.IOException;
 import java.util.Scanner;
 
 // Classe principal responsável por gerenciar as operações CRUD para diferentes estruturas de dados
@@ -23,6 +21,7 @@ public class CRUDMain {
     final CRUDInvertedList crudInvertedList;
     final CRUDInvertedListSector crudInvertedListSector;
     final CRUDHuffman crudHuffman;
+    final CRUDPatternMatch crudKMP;
     // Flag para verificar se os registros foram carregados
     boolean loaded = false;
 
@@ -35,6 +34,7 @@ public class CRUDMain {
         this.crudInvertedList = new CRUDInvertedList(registros);
         this.crudInvertedListSector = new CRUDInvertedListSector(registros);
         this.crudHuffman = new CRUDHuffman(registros);
+        this.crudKMP = new CRUDPatternMatch(registros);
         this.loaded = registros.isThereAny();
     }
 
@@ -45,7 +45,7 @@ public class CRUDMain {
             printMenu();
             String input = sc.nextLine();
             // Validação da entrada do usuário
-            while (input.length() > 1 || input.charAt(0) < '0' || input.charAt(0) > '9') {
+            while (input.length() > 2 || input.charAt(0) < '0' || input.charAt(0) > '9') {
                 printMenu();
                 input = sc.nextLine();
             }
@@ -97,6 +97,10 @@ public class CRUDMain {
                     break;
                 case 9:
                     crudHuffman.menu();
+                case 10:
+                    break;
+                case 11:
+                    crudKMP.menu();
                 default:
                     break;
             }
@@ -114,6 +118,9 @@ public class CRUDMain {
         System.out.println(loaded ? "(6) Limpar todos os registros" : "");
         System.out.println(loaded ? "" : "(7) Carregar os registros da base");
         System.out.println(loaded ? "(8) Ordenar a base de arquivos" : "");
+        System.out.println("(9) Utilizar o CRUD Compressão por Huffman");
+        System.out.println("(10) Utilizar o CRUD Compressão por LZW");
+        System.out.println("(11) Utilizar o CRUD Casamento de Padroes");
         System.out.println("\n (0) Sair");
     }
 }
