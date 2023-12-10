@@ -32,6 +32,7 @@ public class Registros {
     final private KMP kmp;
     final private BoyerMoore boyerMoore;
 
+
     // Construtor da classe.
     public Registros(String filepath, BTree bTreeIndex, ExtendedHash extendedHash, InvertedIndex invertedIndex, InvertedIndex invertedIndexSector, Huffman huffman) {
         this.filePath = filepath;

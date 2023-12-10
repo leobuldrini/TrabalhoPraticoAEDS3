@@ -2,6 +2,7 @@
 //Leonardo B Marques - 793952
 package core;
 
+import DAO.RSA;
 import DAO.Registros;
 
 import java.util.Scanner;
@@ -14,6 +15,10 @@ public class CRUDMain {
     // Objeto responsável por gerenciar os registros
     final Registros registros;
 
+    final String userDir;
+
+    final RSA rsa;
+
     // Objetos CRUD para diferentes estruturas de dados
     final CRUDSequencial crudSequencial;
     final CRUDHash crudHash;
@@ -25,8 +30,10 @@ public class CRUDMain {
     // Flag para verificar se os registros foram carregados
     boolean loaded = false;
 
+    boolean encrypted = true;
+
     // Construtor da classe
-    public CRUDMain(Registros registros) {
+    public CRUDMain(String userDir, Registros registros, RSA rsa) throws Exception {
         this.registros = registros;
         this.crudSequencial = new CRUDSequencial(registros);
         this.crudHash = new CRUDHash(registros);
@@ -36,75 +43,100 @@ public class CRUDMain {
         this.crudHuffman = new CRUDHuffman(registros);
         this.crudKMP = new CRUDPatternMatch(registros);
         this.loaded = registros.isThereAny();
+        this.rsa = rsa;
+        this.userDir = userDir;
+        rsa.encrypt(userDir + "/dataset/breaches_criptografado.damn");
     }
 
     // Método que exibe o menu principal e permite ao usuário escolher uma operação
     public void menu() throws Exception {
         int op;
-        do {
-            printMenu();
-            String input = sc.nextLine();
-            // Validação da entrada do usuário
-            while (input.length() > 2 || input.charAt(0) < '0' || input.charAt(0) > '9') {
+        if(encrypted){
+            do{
+                printMenuEncrypted();
+                String input = sc.nextLine();
+                // Validação da entrada do usuário
+                while (input.length() > 2 || input.charAt(0) < '0' || input.charAt(0) > '9') {
+                    printMenu();
+                    input = sc.nextLine();
+                }
+                op = Integer.parseInt(input);
+                switch (op) {
+                    case 1:
+                        encrypted = false;
+                        rsa.decrypt(userDir + "/dataset/breaches_criptografado.damn",userDir + "/dataset/breaches_descriptografado.csv");
+                        menu();
+                        break;
+                    default:
+                        break;
+                }
+            } while (op != 0 && encrypted);
+        }else {
+            do {
                 printMenu();
-                input = sc.nextLine();
-            }
-            op = Integer.parseInt(input);
-            switch (op) {
-                case 1:
-                    crudSequencial.menu();
-                    break;
-                case 2:
-                    crudBTree.menu();
-                    break;
-                case 3:
-                    crudHash.menu();
-                    break;
-                case 4:
-                    crudInvertedList.menu();
-                    break;
-                case 5:
-                    crudInvertedListSector.menu();
-                    break;
-                case 6:
-                    // Opção para limpar todos os registros
-                    System.out.println("Tem certeza que deseja deletar toda a base de registros?\n(0)Não\n(1)Sim");
-                    String opInputLimparRegistros = sc.nextLine();
-                    // Validação da entrada do usuário
-                    while (opInputLimparRegistros.length() > 1 || opInputLimparRegistros.charAt(0) < '0' || opInputLimparRegistros.charAt(0) > '1') {
+                String input = sc.nextLine();
+                // Validação da entrada do usuário
+                while (input.length() > 2 || input.charAt(0) < '0' || input.charAt(0) > '9') {
+                    printMenu();
+                    input = sc.nextLine();
+                }
+                op = Integer.parseInt(input);
+                switch (op) {
+                    case 1:
+                        crudSequencial.menu();
+                        break;
+                    case 2:
+                        crudBTree.menu();
+                        break;
+                    case 3:
+                        crudHash.menu();
+                        break;
+                    case 4:
+                        crudInvertedList.menu();
+                        break;
+                    case 5:
+                        crudInvertedListSector.menu();
+                        break;
+                    case 6:
+                        // Opção para limpar todos os registros
                         System.out.println("Tem certeza que deseja deletar toda a base de registros?\n(0)Não\n(1)Sim");
-                        opInputLimparRegistros = sc.nextLine();
-                    }
-                    int opClear = Integer.parseInt(opInputLimparRegistros);
-                    if (opClear == 1) {
-                        registros.limparRegistros();
-                    }
-                    this.loaded = false;
-                    break;
-                case 7:
-                    // Opção para carregar registros da base
-                    String userDir = System.getProperty("user.dir");
-                    if (!userDir.contains("src")) {
-                        userDir += "/src";
-                    }
-                    registros.convertCSVtoBreach(userDir + "/dataset/breaches.csv");
-                    loaded = true;
-                    break;
-                case 8:
-                    // Opção para ordenar a base de arquivos
-                    registros.read100BreachesAndIntercalate();
-                    loaded = true;
-                    break;
-                case 9:
-                    crudHuffman.menu();
-                case 10:
-                    break;
-                case 11:
-                    crudKMP.menu();
-                default:
-                    break;
-            }
-        } while (op != 0);
+                        String opInputLimparRegistros = sc.nextLine();
+                        // Validação da entrada do usuário
+                        while (opInputLimparRegistros.length() > 1 || opInputLimparRegistros.charAt(0) < '0' || opInputLimparRegistros.charAt(0) > '1') {
+                            System.out.println("Tem certeza que deseja deletar toda a base de registros?\n(0)Não\n(1)Sim");
+                            opInputLimparRegistros = sc.nextLine();
+                        }
+                        int opClear = Integer.parseInt(opInputLimparRegistros);
+                        if (opClear == 1) {
+                            registros.limparRegistros();
+                        }
+                        this.loaded = false;
+                        break;
+                    case 7:
+                        // Opção para carregar registros da base
+                        String userDir = System.getProperty("user.dir");
+                        if (!userDir.contains("src")) {
+                            userDir += "/src";
+                        }
+                        registros.convertCSVtoBreach(userDir + "/dataset/breaches.csv");
+                        loaded = true;
+                        break;
+                    case 8:
+                        // Opção para ordenar a base de arquivos
+                        registros.read100BreachesAndIntercalate();
+                        loaded = true;
+                        break;
+                    case 9:
+                        crudHuffman.menu();
+                    case 10:
+                        break;
+                    case 11:
+                        crudKMP.menu();
+                    default:
+                        break;
+                }
+            } while (op != 0);
+        }
     }
 
     // Método que exibe o menu principal
@@ -122,5 +154,11 @@ public class CRUDMain {
         System.out.println("(10) Utilizar o CRUD Compressão por LZW");
         System.out.println("(11) Utilizar o CRUD Casamento de Padroes");
         System.out.println("\n (0) Sair");
+    }
+
+    private void printMenuEncrypted(){
+        System.out.println("\t\n\nO CRUD ESTÁ CRIPTOGRAFADO:\n");
+        System.out.println("(1) Descriptografar");
+        System.out.println("\n(0) Sair");
     }
 }

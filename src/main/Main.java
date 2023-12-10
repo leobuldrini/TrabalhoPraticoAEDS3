@@ -2,13 +2,13 @@
 //Leonardo B Marques - 793952
 package main;
 
+import DAO.RSA;
 import DAO.Registros;
 import DAO.compression.Huffman.Huffman;
 import DAO.indexes.BTree;
 import DAO.indexes.ExtendedHash;
 import DAO.indexes.InvertedIndex;
 import core.CRUDMain;
-import java.io.IOException;
 
 // Classe principal que executa o programa
 public class Main {
@@ -40,11 +40,13 @@ public class Main {
 
         Huffman huffman = new Huffman(userDir + "/dataset/breaches.csv", false);
 
+        RSA rsa = new RSA(userDir + "/dataset/breaches.csv", 10177, 10181);
+
         // Cria uma instância de registros usando os índices criados anteriormente
         Registros r = new Registros(userDir + "/dataset/breaches.db", bTree, exHash, invertedIndex, invertedIndexSector, huffman);
 
         // Cria uma instância da classe CRUDMain e inicia o menu
-        CRUDMain crudMain = new CRUDMain(r);
+        CRUDMain crudMain = new CRUDMain(userDir, r, rsa);
         crudMain.menu();
     }
 }
